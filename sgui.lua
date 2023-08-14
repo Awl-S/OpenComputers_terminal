@@ -2,15 +2,12 @@ local zlib = {}
 local component = require "component"
 local unicode = require "unicode"
 local gpu = component.gpu
-
 -- Проверка доступности интерфейса ME
 if component.isAvailable("me_interface") then
     me = component.me_interface
 end
-
 local version = "[v0.2]"
 local author = "[Zayats & Stawlie]"
-
 -- Функция для рисования прогрессбара
 function zlib.bar(x, y, fill, w, color, type)
     local oldColors = {gpu.getForeground(), gpu.getBackground()}
@@ -26,7 +23,6 @@ function zlib.bar(x, y, fill, w, color, type)
     gpu.setBackground(oldColors[2])
     gpu.setForeground(oldColors[1])
 end 
-
 -- Функция для рисования кнопки
 function zlib.button(x, y, bcolor, tcolor, text)
     local oldColors = {gpu.getForeground(), gpu.getBackground()}
@@ -46,14 +42,12 @@ function zlib.button(x, y, bcolor, tcolor, text)
     gpu.setBackground(oldColors[2])
     gpu.setForeground(oldColors[1])
 end
-
 -- Функция для изменения разрешения экрана
 function zlib.resolution(w, h)
     w = w or 45
     h = h or 15
     gpu.setResolution(w, h)
 end 
-
 -- Функция для рисования рамки
 function zlib.main(color, w, h, text, offset)
     offset = offset or 0
@@ -75,14 +69,12 @@ function zlib.main(color, w, h, text, offset)
     gpu.setBackground(oldColors[2])
     gpu.setForeground(oldColors[1]) 
 end
-
 -- Функция для рисования символов (цифры)
 function zlib.symb(x, y, s, color)
     -- Сохраняем текущие цвета перед изменением
     local oldColors = {gpu.getForeground(), gpu.getBackground()}
     -- Устанавливаем передний план (цвет текста) для символа
     gpu.setForeground(color)
-    
     -- Определение символов для каждой цифры
     local symbols = {
         [1] = {
@@ -166,21 +158,15 @@ function zlib.symb(x, y, s, color)
             " ╚════╝ ",
         },
     }
-    
     -- Рисуем символ на экране
     local symbol = symbols[s]
     for i, line in ipairs(symbol) do
         gpu.set(x, y + i - 1, line)
     end
-    
     -- Восстанавливаем исходные цвета
     gpu.setBackground(oldColors[2])
     gpu.setForeground(oldColors[1])   
 end
-
--- Возвращаем таблицу с функциями
-return zlib
-
 -- Функция для установки цвета текста
 function zlib.setColor(index)
     local back
@@ -194,7 +180,18 @@ function zlib.setColor(index)
         ["3"] = 0x24b3a7,
         ["4"] = 0xff0000,
         ["5"] = 0x8b00ff,
-        -- Остальные цвета
+        ["6"] = 0xffa500,
+        ["7"] = 0xbbbbbb,
+        ["8"] = 0x808080,
+        ["9"] = 0x0000ff,
+        ["a"] = 0x66ff66,
+        ["b"] = 0x00ffff,
+        ["c"] = 0xff6347,
+        ["d"] = 0xff00ff,
+        ["e"] = 0xffff00,
+        ["f"] = 0xffffff,
+        ["g"] = 0x00ff00,
+        ["r"] = back,
     }
     if colors[index] then
         gpu.setForeground(colors[index])
@@ -203,7 +200,6 @@ function zlib.setColor(index)
         gpu.setForeground(back)
     end
 end
-
 -- Функция для вывода текста с поддержкой цвета
 function zlib.text(x, y, text)
     local n = 1
@@ -216,7 +212,6 @@ function zlib.text(x, y, text)
         end
     end 
 end
-
 -- Функции для вывода текста в определенных позициях
 function zlib.midL(w, y, text, color)
     local _, n = string.gsub(text, "&", "")
@@ -224,21 +219,18 @@ function zlib.midL(w, y, text, color)
     local x = 13 - (l / 2)
     zlib.text(x + 2, y, text)
 end
-
 function zlib.midR(w, y, text, color)
     local _, n = string.gsub(text, "&", "")
     local l = unicode.len(text) - n * 2
     local x = ((w - 34) / 2) - (l / 2)
     zlib.text(x + 31, y, text)
 end
-
 function zlib.mid(w, y, text, color)
     local _, n = string.gsub(text, "&", "")
     local l = unicode.len(text) - n * 2
     local x = (w / 2) - (l / 2)
     zlib.text(x, y, text)
 end
-
 -- Функция для получения размера предмета в ME-сети
 function zlib.itemSize(name, dmg)
     for _, i in pairs(me.getAvailableItems()) do 
@@ -248,7 +240,6 @@ function zlib.itemSize(name, dmg)
     end
     return 0
 end
-
 -- Функция для рисования прямоугольника
 function zlib.cube(x, y, w, h, color)
     gpu.setForeground(color)
@@ -261,5 +252,4 @@ function zlib.cube(x, y, w, h, color)
     gpu.fill(x, y + 1, 1, h - 1, "║")
     gpu.fill(x + w, y + 1, 1, h - 1, "║")
 end
-
 return zlib
