@@ -6,7 +6,7 @@ local gpu = component.gpu
 if component.isAvailable("me_interface") then
     me = component.me_interface
 end
-local version = "[v0.2]"
+local version = "[v0.3]"
 local author = "[Zayats & Stawlie]"
 -- Функция для рисования прогрессбара
 function zlib.bar(x, y, fill, w, color, type)
@@ -69,103 +69,15 @@ function zlib.main(color, w, h, text, offset)
     gpu.setBackground(oldColors[2])
     gpu.setForeground(oldColors[1]) 
 end
--- Функция для рисования символов (цифры)
-function zlib.symb(x, y, s, color)
-    -- Сохраняем текущие цвета перед изменением
-    local oldColors = {gpu.getForeground(), gpu.getBackground()}
-    -- Устанавливаем передний план (цвет текста) для символа
-    gpu.setForeground(color)
-    -- Определение символов для каждой цифры
-    local symbols = {
-        [1] = {
-            " ███╗   ",
-            " ████║  ",
-            "██╔██║  ",
-            "╚═╝██║  ",
-            "███████╗",
-            "╚══════╝",
-        },
-        [2] = {
-            "██████╗ ",
-            "╚════██╗",
-            "  ███╔═╝",
-            "██╔══╝  ",
-            "███████╗",
-            "╚══════╝",
-        },
-        [3] = {
-            "██████╗ ",
-            "╚════██╗",
-            " █████╔╝",
-            " ╚═══██╗",
-            "██████╔╝",
-            "╚══════╝",
-        },
-        [4] = {
-            "  ██╗██╗",
-            " ██╔╝██║",
-            "██╔╝ ██║",
-            "███████║",
-            "╚════██║",
-            "     ╚═╝",
-        },
-        [5] = {
-            "███████╗",
-            "██╔════╝",
-            "██████╗ ",
-            "╚════██╗",
-            "██████╔╝",
-            "╚═════╝ ",
-        },
-        [6] = {
-            " █████╗ ",
-            "██╔═══╝ ",
-            "██████╗ ",
-            "██╔══██╗",
-            "╚█████╔╝",
-            " ╚════╝ ",
-        },
-        [7] = {
-            "███████╗",
-            "╚════██║",
-            "    ██╔╝",
-            "   ██╔╝ ",
-            "  ██╔╝  ",
-            "  ╚═╝   ",
-        },
-        [8] = {
-            " █████╗ ",
-            "██╔══██╗",
-            "╚█████╔╝",
-            "██╔══██╗",
-            "╚█████╔╝",
-            " ╚════╝ ",
-        },
-        [9] = {
-            " █████╗ ",
-            "██╔══██╗",
-            "╚██████║",
-            " ╚═══██║",
-            " █████╔╝",
-            " ╚════╝ ",
-        },
-        [0] = {
-            " █████╗ ",
-            "██╔══██╗",
-            "██║  ██║",
-            "██║  ██║",
-            " █████╔╝",
-            " ╚════╝ ",
-        },
-    }
-    -- Рисуем символ на экране
-    local symbol = symbols[s]
-    for i, line in ipairs(symbol) do
-        gpu.set(x, y + i - 1, line)
+-- Функция конвертирования энергии
+function zlib.energy(eu)
+    if eu >= 1000000000 then
+        return string.format("%.3f GEU/t", eu / 1000000000)
+    elseif eu >= 1000000 then
+        return string.format("%.3f MEU/t", eu / 1000000)
+    else
+        return string.format("%.3f kEU/t", eu / 1000)
     end
-    -- Восстанавливаем исходные цвета
-    gpu.setBackground(oldColors[2])
-    gpu.setForeground(oldColors[1])   
 end
 -- Функция для установки цвета текста
 function zlib.setColor(index)
