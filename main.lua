@@ -123,7 +123,7 @@ local function updFluxNetworks()
     gui.text(3, 4, "&aСеть:&e " .. fluxInfo.name)
 
     gui.text(3, 5, string.rep(" ", 20))
-    gui.text(3, 5, "&aВход:&2 " .. energy(fluxEnergy.energyInput/4) )
+    gui.text(3, 5, "&aВход: &2 " .. energy(fluxEnergy.energyInput/4) )
 
     gui.text(3, 6, string.rep(" ", 20))
     gui.text(3, 6, "&aБуфер:&2 " .. string.sub(energy(fluxEnergy.totalBuffer), 1, -3))
@@ -194,7 +194,7 @@ while true do
     updatePlayersDisplay()
     updMEController()
     updReactor()
-    os.sleep(0.5)
+    --os.sleep(0.5)
 end
 
 --emulatedMEController(gui)
