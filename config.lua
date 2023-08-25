@@ -1,80 +1,89 @@
-local component = require "component"
-local computer = require "computer"
+local component = require("component")
+local fs = require("filesystem")  -- Use the file system component for directory checks.
 
-nameTable = "Рядовой Табуретка"
-nameChat = "Рядовой Табуретка"
-
-timerUpdate = 1200;
-timerReactor = 100;
-desiredTotalReactors = 50 -- Введите ваше количество реакторов
-
-players = {
+playersData = { --До 12 игроков, далее все игроки будут скрыты, но уведомления будут в чате
     -- игроки для проверки на онлайн {"ник", пол (M/W), сообщение, онлайн}
-    {"Stawlie_", "M", "Царь батюшка на сервере", false},
-    {"", "W", nil, false},
+    {"Stawlie_", "M", "Царь батюшка на сервере", false, "10:40"}, -- 1
+    --{"", "W", nil, false},
 }
-    
--------------------------------------------
---Информацию ниже лучше не редактировать
--------------------------------------------
-W, H = 100, 48
-colors = {0x525FE1, 0x525FE1, 0x525FE1, 0xEEE2DE}
 
-local function energy(eu)
-    if eu >= 1000000000 then
+TableTitle = "&4[Мониторинг]"
+ChatTitle = "Оператор"
+
+function energy(eu)
+    if eu >= 1000000000000 then
+        return string.format("%.3f TEU/t", eu / 1000000000000)
+    elseif eu >= 1000000000 then
         return string.format("%.3f GEU/t", eu / 1000000000)
     elseif eu >= 1000000 then
         return string.format("%.3f MEU/t", eu / 1000000)
-    else
+    elseif eu >= 1000 then
         return string.format("%.3f kEU/t", eu / 1000)
+    else
+        return string.format("%.3f EU/t", eu)
+    end
+end
+
+maxEnergyFile = "data/energyInfo.txt" -- Путь к файлу для сохранения максимальной энергии
+totalReactorChambers = 0;
+
+function ensureDirectoryExists(path)
+    local directory = path:match("(.*/)")
+    if directory and not fs.isDirectory(directory) then
+        fs.makeDirectory(directory)
+    end
+end
+
+function loadFileData(fileName)
+    ensureDirectoryExists(fileName)
+
+    local file = io.open(fileName, "r")
+    if file then
+        local request = tonumber(file:read("*a"))
+        file:close()
+        return request or 0
+    else
+        return 0
+    end
+end
+
+function saveMaxEnergy(maxEnergy, fileName)
+    local file = io.open(fileName, "w")
+    if file then
+        file:write(tostring(maxEnergy))
+        file:close()
     end
 end
 
 function getPlayerMessage(playerName)
-    for _, playerData in ipairs(players) do
+    for _, playerData in ipairs(playersData) do
         if playerData[1] == playerName then
             local message = playerData[3] or "Зашел в игру"
-            -- Проверяем пол игрока
             if playerData[2] == "W" then
                 message = "Зашла в игру"
             end
             return message
         end
     end
-    return "Зашел в игру"  -- Возвращаем сообщение по умолчанию, если игрок не найден
+    return "Зашел в игру"
 end
 
----------Реакторы----------------
-targetComponentType = "reactor_chamber"
-
--- Функция для проверки, работает ли реактор
-function isReactorActive(reactorAddress)
-    local reactor = component.proxy(reactorAddress)
-    if reactor and reactor.getEUOutput then
-      return reactor.getEUOutput() >= 1
+function getComponentsByType(componentType)
+    local components = {}
+    for address in component.list(componentType) do
+        table.insert(components, { address = address})
     end
-    return false
+    return components
 end
 
-function getReactorEnergyProduction(reactorAddress)
-    local reactor = component.proxy(reactorAddress)
-    if reactor and reactor.getReactorEUOutput then
-      return reactor.getReactorEUOutput()
+function countReactorChambers()
+    local reactorChambers = component.list("reactor_chamber")
+    local count = 0
+    for _ in pairs(reactorChambers) do
+        count = count + 1
     end
-    return 0
-  end
+    return count
+end
 
-function debugReactor(nonWorkingReactors, nonWorkingID, chat)
-if timerReactor == 100 then
-    if nonWorkingReactors >= 1 then
-        local nonWorkingMessage = "У вас не работают реактора: "
-        for i, reactorID in ipairs(nonWorkingID) do
-            if i > 1 then
-                nonWorkingMessage = nonWorkingMessage .. ", "
-            end
-            nonWorkingMessage = nonWorkingMessage .. "#" .. reactorID
-        end
-        chat.say(nonWorkingMessage)
-    end
-end
-end
+lastUpdateTime = 0
+updateInterval = 60
