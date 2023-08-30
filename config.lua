@@ -2,8 +2,9 @@ local component = require("component")
 local fs = require("filesystem")  -- Use the file system component for directory checks.
 
 playersData = { --До 12 игроков, далее все игроки будут скрыты, но уведомления будут в чате
-    -- игроки для проверки на онлайн {"ник", пол (M/W), сообщение, онлайн}
+    -- игроки для проверки на онлайн {"ник", пол (M/W), сообщение, онлайн, "10:40" - не обязательна, временно не трогать}
     {"Stawlie_", "M", "Царь батюшка на сервере", false, "10:40"}, -- 1
+
     --{"", "W", nil, false},
 }
 
@@ -24,18 +25,17 @@ function energy(eu)
     end
 end
 
-maxEnergyFile = "data/energyInfo.txt" -- Путь к файлу для сохранения максимальной энергии
+maxEnergyFile = "/home/data/energyInfo.txt" -- Путь к файлу для сохранения максимальной энергии
 totalReactorChambers = 0;
 
 function ensureDirectoryExists(path)
-    local directory = path:match("(.*/)")
-    if directory and not fs.isDirectory(directory) then
-        fs.makeDirectory(directory)
+    if path and not fs.isDirectory(path) then
+            fs.makeDirectory(path)
     end
 end
 
 function loadFileData(fileName)
-    ensureDirectoryExists(fileName)
+    ensureDirectoryExists("/home/data")
 
     local file = io.open(fileName, "r")
     if file then
@@ -86,4 +86,4 @@ function countReactorChambers()
 end
 
 lastUpdateTime = 0
-updateInterval = 60
+updateInterval = 3000

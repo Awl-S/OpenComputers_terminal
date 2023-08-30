@@ -146,10 +146,10 @@ function updReactor()
         local totalEnergyReactor = 0
 
         local totalReactorChambers = countReactorChambers()
-        local maxChambers = loadFileData("data/reactorInfo.txt")
-
+        local maxChambers = loadFileData("/home/data/reactorInfo.txt")
         if totalReactorChambers > maxChambers then
-            saveMaxEnergy(totalReactorChambers, "data/reactorInfo.txt")
+            saveMaxEnergy(totalReactorChambers, "/home/data/reactorInfo.txt")
+            maxChambers = totalReactorChambers
         end
 
         local xPos, yPos = 3, 27
