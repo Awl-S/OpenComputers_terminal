@@ -70,7 +70,7 @@ function ugui.drawMain(nameTable, color, version)
     local width, height = gpu.getResolution()
     ugui.drawCube(1, 1, width, height, color)  -- Исправлен вызов функции
     ugui.text(math.floor((width/2)-unicode.len(nameTable)/2), 1,  nameTable)  -- Исправлен вызов функции
-    ugui.text(5, height, "&9[Author: Zayats & Stawlie]")
+    ugui.text(5, height, "&9[Author: Zayats ∧ Stawlie]")
     vers = "&9[v" .. version .. " beta]"
     ugui.text(width-#vers-5, height, vers)  -- Исправлен вызов функции
 end
