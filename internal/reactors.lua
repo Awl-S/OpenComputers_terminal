@@ -95,9 +95,8 @@ local function notifyExplosion(missingCount, totalFound, maxExpected)
 end
 
 local function render(stats, frames)
-    -- Используем переданные frames или значения по умолчанию
-    local reactorFrame = frames and frames.reactors or {x = 2, y = 10, width = 116, height = 13}
-    
+    local reactorFrame = (frames and frames.reactors) or  (_G.mainFrames and _G.mainFrames.reactors) or  {x = 2, y = 10, width = 116, height = 13}
+
     local b = utils.getFrameInnerBounds(reactorFrame)
     local cols = 3
     local reactorWidth = math.floor(b.width / cols) - 1

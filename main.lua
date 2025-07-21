@@ -72,7 +72,6 @@ local function main()
     mainLoop()
 end
 
-return {
-    frames = frames,
-    main = main
-}
+_G.mainFrames = frames
+
+main()
