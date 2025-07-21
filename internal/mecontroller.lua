@@ -1,6 +1,6 @@
 local component = require("component")
 local gui = require("sgui")
-local utils = require("utils")
+local utils = require("internal/utils")
 
 local mecontroller = {}
 

@@ -1,15 +1,13 @@
--- pastebin get byMPenjT 1
-
 local component = require("component")
 local computer = require("computer")
 local term = require("term")
 
 local gui = require("sgui")
-local utils = require("utils")
-local energy = require("energy")
-local players = require("players")
-local reactors = require("reactors")
-local mecontroller = require("mecontroller")
+local utils = require("internal/utils")
+local energy = require("internal/energy")
+local players = require("internal/players")
+local reactors = require("internal/reactors")
+local mecontroller = require("internal/mecontroller")
 
 local SCREEN_WIDTH, SCREEN_HEIGHT = 120, 40
 local UPDATE_INTERVAL = 0.1
@@ -38,7 +36,7 @@ local function initializeInterface()
     gpu.setResolution(SCREEN_WIDTH, SCREEN_HEIGHT)
     calculateFrameSizes()
     
-    gui.drawMain("&d[Мониторинг]", gui.colors["border"], "1.1")
+    gui.drawMain("&d[Мониторинг]", gui.colors["border"], "2.0")
     gui.drawFrame(frames.energy.x, frames.energy.y, frames.energy.width, frames.energy.height, frames.energy.title, gui.colors["border"])
     gui.drawFrame(frames.players.x, frames.players.y, frames.players.width, frames.players.height, frames.players.title, gui.colors["border"])
     gui.drawFrame(frames.reactors.x, frames.reactors.y, frames.reactors.width, frames.reactors.height, frames.reactors.title, gui.colors["border"])

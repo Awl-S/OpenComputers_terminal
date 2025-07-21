@@ -1,7 +1,7 @@
 local component = require("component")
 local computer = require("computer")
 local gui = require("sgui")
-local utils = require("utils")
+local utils = require("internal/utils")
 
 local reactors = {}
 
