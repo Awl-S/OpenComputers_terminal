@@ -73,7 +73,7 @@ function ugui.drawMain(nameTable, color, version)
     ugui.drawCube(1, 1, width, height, color)  
     ugui.text(math.floor((width/2)-unicode.len(nameTable)/2), 1,  nameTable)
     ugui.text(5, height, "&9[Author: Stawlie]")
-    vers = "&9[v" .. version .. " beta]"
+    vers = "&9[v" .. version .. "]"
     ugui.text(width-#vers-5, height, vers)
 end
 

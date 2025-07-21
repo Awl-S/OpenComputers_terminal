@@ -205,7 +205,6 @@ local function loadPlayersData()
         -- Если файл не существует, создаем данные по умолчанию
         data = {
             {"Stawlie_", "Царь батюшка на сервере", "Покинул путь войина", false},
-            {"Chomski", "Царь батюшка на сервере", "Покинул сервер", false},
         }
         savePlayersData(data)
     end
