@@ -94,9 +94,11 @@ local function notifyExplosion(missingCount, totalFound, maxExpected)
     chatBox.setName("§9§lОператор§7§o")
 end
 
-local function render(stats)
-    local frames = require("main").frames or {reactors = {x = 2, y = 10, width = 116, height = 13}}
-    local b = utils.getFrameInnerBounds(frames.reactors)
+local function render(stats, frames)
+    -- Используем переданные frames или значения по умолчанию
+    local reactorFrame = frames and frames.reactors or {x = 2, y = 10, width = 116, height = 13}
+    
+    local b = utils.getFrameInnerBounds(reactorFrame)
     local cols = 3
     local reactorWidth = math.floor(b.width / cols) - 1
     local reactorHeight = 4
@@ -136,7 +138,7 @@ local function render(stats)
     end
 end
 
-function reactors.update()
+function reactors.update(frames)
     local now = computer.uptime()
     if now - lastUpdate < UPDATE_INTERVAL then return end
     lastUpdate = now
@@ -163,7 +165,7 @@ function reactors.update()
     end
 
     lastReactorCount = stats.count
-    render(stats)
+    render(stats, frames)
 end
 
 return reactors

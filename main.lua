@@ -1,5 +1,4 @@
 -- Author: https://github.com/Awl-S
-
 local component = require("component")
 local computer = require("computer")
 local term = require("term")
@@ -54,7 +53,7 @@ local function mainLoop()
         mecontroller.render(meData, utils.getFrameInnerBounds(frames.meProcesses))
         players.render(playersData, utils.getFrameInnerBounds(frames.players))
         energy.render(energyStats)
-        reactors.update()
+        reactors.update(frames)
         
         players.handleChatMessages(playersData.changes)
         
@@ -73,4 +72,7 @@ local function main()
     mainLoop()
 end
 
-main()
+return {
+    frames = frames,
+    main = main
+}

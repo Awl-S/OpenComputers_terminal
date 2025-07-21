@@ -1,3 +1,4 @@
+-- wget -f https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/monitoringInstaller.lua monitoringInstaller.lua 
 -- GitHub Downloader для OpenComputers (через wget)
 -- Скачивает файлы с GitHub и размещает их по нужным папкам
 -- Author: https://github.com/Awl-S
