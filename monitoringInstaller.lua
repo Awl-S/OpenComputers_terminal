@@ -12,26 +12,26 @@ local files = {
         url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/main.lua",
         path = "/home/main.lua"
     },
-    {
-        url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/internal/energy.lua",
-        path = "/home/internal/energy.lua"
-    },
-    {
-        url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/internal/mecontroller.lua",
-        path = "/home/internal/mecontroller.lua"
-    },
-    {
-        url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/internal/players.lua",
-        path = "/home/internal/players.lua"
-    },
-    {
-        url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/internal/reactors.lua",
-        path = "/home/internal/reactors.lua"
-    },
-    {
-        url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/internal/utils.lua",
-        path = "/home/internal/utils.lua"
-    },
+    -- {
+    --     url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/internal/energy.lua",
+    --     path = "/home/internal/energy.lua"
+    -- },
+    -- {
+    --     url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/internal/mecontroller.lua",
+    --     path = "/home/internal/mecontroller.lua"
+    -- },
+    -- {
+    --     url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/internal/players.lua",
+    --     path = "/home/internal/players.lua"
+    -- },
+    -- {
+    --     url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/internal/reactors.lua",
+    --     path = "/home/internal/reactors.lua"
+    -- },
+    -- {
+    --     url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/internal/utils.lua",
+    --     path = "/home/internal/utils.lua"
+    -- },
     {
         url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/lib/sgui.lua",
         path = "/lib/sgui.lua"
