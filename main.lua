@@ -1,6 +1,4 @@
--- Industrial Monitoring System v1.1
--- Copyright (c) 2025 Industrial Solutions
--- High-performance real-time monitoring system for power networks, reactors and players
+-- pastebin get byMPenjT 1
 
 local component = require("component")
 local computer = require("computer")
@@ -8,69 +6,18 @@ local term = require("term")
 local event = require("event")
 local thread = require("thread")
 local filesystem = require("filesystem")
+
 local gui = require("sgui")
 
--- Core Component Initialization
 local MEController = component.isAvailable("me_controller") and component.me_controller or nil
 local gpu = component.isAvailable("gpu") and component.gpu or nil
 local chatBox = component.isAvailable("chat_box") and component.chat_box or nil
-
--- Flux Network Component Discovery
 local flux = nil
 local fluxComponentNames = {"flux_network", "fluxnetwork", "flux_controller", "fluxnetworks", "flux_plug"}
-for _, name in ipairs(fluxComponentNames) do
-    if component.isAvailable(name) then
-        flux = component[name]
-        break
-    end
-end
 
--- Configuration Constants
-local CONFIG = {
-    DEBUG_USER = "Stawlie_",
-    DEBUG_MODE = true,
-    SCREEN_WIDTH = 120,
-    SCREEN_HEIGHT = 40,
-    CLEAR_INTERVAL = 5,
-    REACTOR_UPDATE_INTERVAL = 2,
-    REACTOR_TEMP_WARNING = 950,
-    MAX_REACTORS = 6,
-    TABLE_TITLE = "&4[Мониторинг]",
-    CHAT_TITLE = "Оператор"
-}
+local debugTest = "Stawlie_"
+local debug = true
 
--- Frame Layout Configuration
-local FRAMES = {
-    energy = {x = 2, y = 2, width = 34, height = 8, title = "Энерго-сеть"},
-    players = {x = 38, y = 2, width = 0, height = 8, title = "Игроки"},
-    reactors = {x = 2, y = 10, width = 0, height = 13, title = "Реакторы"},
-    meProcesses = {x = 2, y = 23, width = 0, height = 17, title = "МЭ Процессы создания"}
-}
-
--- Player Database
-local PLAYERS_DATABASE = {
-    {"Stawlie_", "Царь батюшка на сервере", false},
-    {"Игроков ник", "Текст при входе в игру", false}
-}
-
--- File Paths
-local FILES = {
-    MAX_ENERGY = "/home/data/energyInfo.txt",
-    REACTOR_INFO = "/home/data/reactorInfo.txt"
-}
-
--- Global State
-local clearTimers = {
-    meController = 0,
-    meStats = 0
-}
-local maxEnergyFluxNetwork = 0
-local lastReactorUpdate = 0
-local lastReactorCount = 0
-local reactorsClearedOnce = false
-local explosionNotified = false
-
--- Utility Functions
 local function getComponentsByType(componentType)
     local components = {}
     for address, cType in component.list() do
@@ -81,14 +28,30 @@ local function getComponentsByType(componentType)
     return components
 end
 
+for _, name in ipairs(fluxComponentNames) do
+    if component.isAvailable(name) then
+        flux = component[name]
+        break
+    end
+end
+
+local frames = {
+    energy = {x = 2, y = 2, width = 34, height = 8, title = "Энерго-сеть"},
+    players = {x = 38, y = 2, width = 0, height = 8, title = "Игроки"},
+    reactors = {x = 2, y = 10, width = 0, height = 13, title = "Реакторы"},
+    meProcesses = {x = 2, y = 23, width = 0, height = 17, title = "МЭ Процессы создания"},
+}
+
+local screenWidth, screenHeight = 120, 40
+
 local function calculateFrameSizes()
-    FRAMES.players.width = CONFIG.SCREEN_WIDTH - FRAMES.players.x
-    FRAMES.reactors.width = CONFIG.SCREEN_WIDTH - FRAMES.reactors.x
-    FRAMES.meProcesses.width = CONFIG.SCREEN_WIDTH - FRAMES.meProcesses.x
+    frames.players.width = screenWidth - frames.players.x
+    frames.reactors.width = screenWidth - frames.reactors.x
+    frames.meProcesses.width = screenWidth - frames.meProcesses.x
 end
 
 local function getFrameInnerBounds(frameName)
-    local frame = FRAMES[frameName]
+    local frame = frames[frameName]
     return {
         x = frame.x + 1,
         y = frame.y + 1,
@@ -99,71 +62,22 @@ local function getFrameInnerBounds(frameName)
     }
 end
 
+local clearTimers = {
+    meController = 0,
+    meStats = 0,
+}
+
+local CLEAR_INTERVAL = 5
+
 local function shouldClear(timerName)
     local currentTime = computer.uptime()
-    if currentTime - clearTimers[timerName] >= CONFIG.CLEAR_INTERVAL then
+    if currentTime - clearTimers[timerName] >= CLEAR_INTERVAL then
         clearTimers[timerName] = currentTime
         return true
     end
     return false
 end
 
--- File I/O Operations
-local function ensureDirectoryExists(path)
-    if not filesystem.exists(path) then
-        filesystem.makeDirectory(path)
-    end
-end
-
-local function loadFileData(fileName)
-    ensureDirectoryExists("/home/data")
-    local file = io.open(fileName, "r")
-    if file then
-        local data = tonumber(file:read("*a"))
-        file:close()
-        return data or 0
-    end
-    return 0
-end
-
-local function saveMaxEnergy(maxEnergy, fileName)
-    local file = io.open(fileName, "w")
-    if file then
-        file:write(tostring(maxEnergy))
-        file:close()
-    end
-end
-
--- Energy Formatting Utilities
-local function formatEnergy(eu)
-    if eu >= 1000000000000 then
-        return string.format("%.3f TEU/t", eu / 1000000000000)
-    elseif eu >= 1000000000 then
-        return string.format("%.3f GEU/t", eu / 1000000000)
-    elseif eu >= 1000000 then
-        return string.format("%.3f MEU/t", eu / 1000000)
-    elseif eu >= 1000 then
-        return string.format("%.3f kEU/t", eu / 1000)
-    else
-        return string.format("%.3f EU/t", eu)
-    end
-end
-
-local function formatReactorEnergy(rf)
-    if rf >= 1000000000000 then
-        return string.format("%.2f TRF/t", rf / 1000000000000)
-    elseif rf >= 1000000000 then
-        return string.format("%.2f GRF/t", rf / 1000000000)
-    elseif rf >= 1000000 then
-        return string.format("%.2f MRF/t", rf / 1000000)
-    elseif rf >= 1000 then
-        return string.format("%.2f kRF/t", rf / 1000)
-    else
-        return string.format("%.0f RF/t", rf)
-    end
-end
-
--- ME Controller Management
 local function getMEControllerStats()
     if not MEController then
         return {processors = {}, stats = {idle = 0, busy = 0}, total = 0}
@@ -257,11 +171,16 @@ local function renderMEController(controllerData)
     gui.text(statsX2, statsY, "&9 Всего: &a" .. controllerData.total)
 end
 
--- Player Management System
-local function getPlayerMessage(playerName)
-    for _, playerData in ipairs(PLAYERS_DATABASE) do
+local playersData = {
+    {"Stawlie_", "Царь батюшка на сервере", false},
+    {"Chomski", "Царь батюшка на сервере", false},
+}
+
+function getPlayerMessage(playerName)
+    for _, playerData in ipairs(playersData) do
         if playerData[1] == playerName then
-            return playerData[2] or "Зашел в игру"
+            local message = playerData[2] or "Зашел в игру"
+            return message
         end
     end
     return "Зашел в игру"
@@ -271,23 +190,23 @@ local function processPlayersStatus()
     local playersStatus = {}
     local statusChanges = {}
     
-    for i = 1, #PLAYERS_DATABASE do
-        computer.removeUser(PLAYERS_DATABASE[i][1])
-        if CONFIG.DEBUG_USER then
-            computer.removeUser(CONFIG.DEBUG_USER)
+    for i = 1, #playersData do
+        computer.removeUser(playersData[i][1])
+        if debugTest then
+            computer.removeUser(debugTest)
         end
     end
     
-    for i = 1, #PLAYERS_DATABASE do
-        local player = PLAYERS_DATABASE[i][1]
+    for i = 1, #playersData do
+        local player = playersData[i][1]
         local isOnline = computer.addUser(player)
-        local wasOnline = PLAYERS_DATABASE[i][3]
+        local wasOnline = playersData[i][3]
         
         playersStatus[i] = {
             name = player,
             isOnline = isOnline,
             wasOnline = wasOnline,
-            data = PLAYERS_DATABASE[i]
+            data = playersData[i]
         }
         
         if isOnline and not wasOnline then
@@ -296,20 +215,19 @@ local function processPlayersStatus()
                 player = player,
                 message = getPlayerMessage(player)
             }
-            PLAYERS_DATABASE[i][3] = true
+            playersData[i][3] = true
         elseif not isOnline and wasOnline then
             statusChanges[#statusChanges + 1] = {
                 type = "left",
                 player = player
-                message = "покинул сервер!"
             }
-            PLAYERS_DATABASE[i][3] = false
+            playersData[i][3] = false
         end
         
-        if CONFIG.DEBUG_USER then
-            computer.addUser(CONFIG.DEBUG_USER)
+        if debugTest then
+            computer.addUser(debugTest)
         end
-        computer.addUser(PLAYERS_DATABASE[i][1])
+        computer.addUser(playersData[i][1])
     end
     
     return {
@@ -358,7 +276,12 @@ local function renderPlayersDisplay(processedData)
                 local y = innerBounds.y + 1 + rowIndex
                 
                 if x <= innerBounds.maxX - playerNameMaxLength and y <= innerBounds.maxY then
-                    local prefix = playerInfo.isOnline and "&2" or "&4"
+                    local prefix = ""
+                    if playerInfo.isOnline then
+                        prefix = "&2"
+                    else
+                        prefix = "&4"
+                    end
                     prefix = prefix .. playerInfo.name
                     gui.text(x, y, prefix)
                 end
@@ -380,7 +303,50 @@ local function handleChatMessages(statusChanges)
     end
 end
 
--- Flux Network Management
+function ensureDirectoryExists(path)
+    if not filesystem.exists(path) then
+        filesystem.makeDirectory(path)
+    end
+end
+
+function loadFileData(fileName)
+    ensureDirectoryExists("/home/data")
+
+    local file = io.open(fileName, "r")
+    if file then
+        local request = tonumber(file:read("*a"))
+        file:close()
+        return request or 0
+    else
+        return 0
+    end
+end
+
+function saveMaxEnergy(maxEnergy, fileName)
+    local file = io.open(fileName, "w")
+    if file then
+        file:write(tostring(maxEnergy))
+        file:close()
+    end
+end
+
+function energy(eu)
+    if eu >= 1000000000000 then
+        return string.format("%.3f TEU/t", eu / 1000000000000)
+    elseif eu >= 1000000000 then
+        return string.format("%.3f GEU/t", eu / 1000000000)
+    elseif eu >= 1000000 then
+        return string.format("%.3f MEU/t", eu / 1000000)
+    elseif eu >= 1000 then
+        return string.format("%.3f kEU/t", eu / 1000)
+    else
+        return string.format("%.3f EU/t", eu)
+    end
+end
+
+maxEnergyFile = "/home/data/energyInfo.txt"
+maxEnergyFluxNetwork = loadFileData(maxEnergyFile)
+
 local function getFluxNetworkStats()
     if not flux then
         return {
@@ -413,7 +379,7 @@ local function getFluxNetworkStats()
 
     if maxEnergyFluxNetwork < e.energyInput then
         maxEnergyFluxNetwork = e.energyInput
-        saveMaxEnergy(maxEnergyFluxNetwork, FILES.MAX_ENERGY)
+        saveMaxEnergy(maxEnergyFluxNetwork, maxEnergyFile)
     end
 
     return {
@@ -429,23 +395,46 @@ local function renderFluxNetwork(stats)
         gui.text(3, 4, "&cFlux Network: Error")
         return
     end
-    
     gui.text(3, 5, string.rep(" ", 20))
     gui.text(3, 4, "&aСеть:&e " .. tostring(stats.name))
-    
+
     gui.text(3, 5, string.rep(" ", 20))
-    gui.text(3, 5, "&aВход: &2" .. formatEnergy(stats.input / 4))
-    
+    gui.text(3, 5, "&aВход: &2" .. energy(stats.input / 4))
+
     gui.text(3, 6, string.rep(" ", 20))
-    gui.text(3, 6, "&aБуфер:&2 " .. string.sub(formatEnergy(stats.buffer), 1, -3))
-    
-    gui.text(3, 7, "&aМаксимальный вход:&2 " .. formatEnergy(stats.maxInput / 4))
+    gui.text(3, 6, "&aБуфер:&2 " .. string.sub(energy(stats.buffer), 1, -3))
+
+    gui.text(3, 7, "&aМаксимальный вход:&2 " .. energy(stats.maxInput / 4))
 end
 
--- Nuclear Reactor Management
+local REACTOR_FILE         = "/home/data/reactorInfo.txt"
+local REACTOR_UPDATE_INT   = 2
+local REACTOR_TEMP_WARN    = 950
+local MAX_REACTORS         = 6
+
+local lastReactorUpdate    = 0
+local lastReactorCount     = 0
+local reactorsClearedOnce  = false
+local explosionNotified    = false
+
+local function formatReactorEnergy(rf)
+    if rf >= 1000000000000 then
+        return string.format("%.2f TRF/t", rf / 1000000000000)
+    elseif rf >= 1000000000 then
+        return string.format("%.2f GRF/t", rf / 1000000000)
+    elseif rf >= 1000000 then
+        return string.format("%.2f MRF/t", rf / 1000000)
+    elseif rf >= 1000 then
+        return string.format("%.2f kRF/t", rf / 1000)
+    else
+        return string.format("%.0f RF/t", rf)
+    end
+end
+
 local function getNuclearReactorsStats()
     local reactorsAddr = getComponentsByType("htc_reactors_nuclear_reactor")
     local reactorsData = {}
+
     local totalEnergy, totalCoolant, hottest = 0, 0, 0
 
     for i = 1, #reactorsAddr do
@@ -465,26 +454,26 @@ local function getNuclearReactorsStats()
         hasWork = success5 and hasWork or false
 
         reactorsData[#reactorsData + 1] = {
-            id = i,
-            online = hasWork,
+            id        = i,
+            online    = hasWork,
             energyGen = gen,
-            coolant = mb,
-            temp = t
+            coolant   = mb,
+            temp      = t
         }
 
-        totalEnergy = totalEnergy + gen
+        totalEnergy  = totalEnergy  + gen
         totalCoolant = totalCoolant + mb
-        hottest = math.max(hottest, t)
+        hottest      = math.max(hottest, t)
 
         ::continue::
     end
 
     return {
-        reactors = reactorsData,
-        count = #reactorsAddr,
-        totalEnergy = totalEnergy,
-        totalCoolant = totalCoolant,
-        hottestTemp = hottest
+        reactors        = reactorsData,
+        count           = #reactorsAddr,
+        totalEnergy     = totalEnergy,
+        totalCoolant    = totalCoolant,
+        hottestTemp     = hottest,
     }
 end
 
@@ -494,6 +483,7 @@ local function renderNuclearReactors(stats)
     local reactorWidth = math.floor(b.width / cols) - 1
     local reactorHeight = 4
     local separatorWidth = 1
+    
     local clearWidth = 30
     
     if not reactorsClearedOnce or lastReactorCount ~= stats.count then
@@ -513,7 +503,7 @@ local function renderNuclearReactors(stats)
         local y = b.y + rowIndex * (reactorHeight + 1)
         
         local reactorColor = reactor.online and "&a" or "&4"
-        local tempColor = reactor.temp >= CONFIG.REACTOR_TEMP_WARNING and "&c" or "&f"
+        local tempColor = reactor.temp >= REACTOR_TEMP_WARN and "&c" or "&f"
         
         gui.text(x, y, reactorColor .. "Реактор №" .. reactor.id)
         gui.text(x, y + 1, "&fЭнергия: &6" .. formatReactorEnergy(reactor.energyGen))
@@ -529,6 +519,9 @@ local function renderNuclearReactors(stats)
     end
 end
 
+local TableTitle = "&4[Мониторинг]"
+local ChatTitle = "Оператор"
+
 local function notifyReactorExplosion(missingCount, totalFound, maxExpected)
     if not chatBox then return end
     
@@ -543,20 +536,21 @@ local function notifyReactorExplosion(missingCount, totalFound, maxExpected)
     end
     
     chatBox.say("§c§lПроверьте реакторную зону немедленно!")
-    chatBox.setName("§9§l" .. CONFIG.CHAT_TITLE .. "§7§o")
+    
+    chatBox.setName("§9§l" .. ChatTitle .. "§7§o")
 end
 
 local function updateReactors()
     local now = computer.uptime()
-    if now - lastReactorUpdate < CONFIG.REACTOR_UPDATE_INTERVAL then return end
+    if now - lastReactorUpdate < REACTOR_UPDATE_INT then return end
     lastReactorUpdate = now
 
     local stats = getNuclearReactorsStats()
-    local maxStored = loadFileData(FILES.REACTOR_INFO)
+    local maxStored = loadFileData(REACTOR_FILE)
 
     if maxStored == 0 or stats.count > maxStored then
-        maxStored = math.max(stats.count, CONFIG.MAX_REACTORS)
-        saveMaxEnergy(maxStored, FILES.REACTOR_INFO)
+        maxStored = math.max(stats.count, MAX_REACTORS)
+        saveMaxEnergy(maxStored, REACTOR_FILE)
     end
 
     local missingReactors = maxStored - stats.count
@@ -573,46 +567,39 @@ local function updateReactors()
     end
 
     lastReactorCount = stats.count
+
     renderNuclearReactors(stats)
 end
 
--- System Initialization
-local function initializeSystem()
-    term.clear()
-    maxEnergyFluxNetwork = loadFileData(FILES.MAX_ENERGY)
+term.clear()
+
+if gpu then
+    gpu.setResolution(screenWidth, screenHeight)
     
-    if gpu then
-        gpu.setResolution(CONFIG.SCREEN_WIDTH, CONFIG.SCREEN_HEIGHT)
-        calculateFrameSizes()
-        
-        gui.drawMain("&d" .. CONFIG.TABLE_TITLE, gui.colors["border"], "1.1")
-        gui.drawFrame(FRAMES.energy.x, FRAMES.energy.y, FRAMES.energy.width, FRAMES.energy.height, FRAMES.energy.title, gui.colors["border"])
-        gui.drawFrame(FRAMES.players.x, FRAMES.players.y, FRAMES.players.width, FRAMES.players.height, FRAMES.players.title, gui.colors["border"])
-        gui.drawFrame(FRAMES.reactors.x, FRAMES.reactors.y, FRAMES.reactors.width, FRAMES.reactors.height, FRAMES.reactors.title, gui.colors["border"])
-        gui.drawFrame(FRAMES.meProcesses.x, FRAMES.meProcesses.y, FRAMES.meProcesses.width, FRAMES.meProcesses.height, FRAMES.meProcesses.title, gui.colors["border"])
-    end
+    calculateFrameSizes()
     
-    if chatBox then
-        chatBox.setName("§9§l" .. CONFIG.CHAT_TITLE .. "§7§o")
-    end
+    gui.drawMain("&d" .. TableTitle, gui.colors["border"], "1.1")
+    gui.drawFrame(frames.energy.x, frames.energy.y, frames.energy.width, frames.energy.height, frames.energy.title, gui.colors["border"])
+    gui.drawFrame(frames.players.x, frames.players.y, frames.players.width, frames.players.height, frames.players.title, gui.colors["border"])
+    gui.drawFrame(frames.reactors.x, frames.reactors.y, frames.reactors.width, frames.reactors.height, frames.reactors.title, gui.colors["border"])
+    gui.drawFrame(frames.meProcesses.x, frames.meProcesses.y, frames.meProcesses.width, frames.meProcesses.height, frames.meProcesses.title, gui.colors["border"])
 end
 
--- Main Execution Loop
-local function runMainLoop()
-    while true do
-        local meData = getMEControllerStats()
-        local playersData_processed = processPlayersStatus()
-        
-        renderMEController(meData)
-        renderPlayersDisplay(playersData_processed)
-        renderFluxNetwork(getFluxNetworkStats())
-        updateReactors()
-        handleChatMessages(playersData_processed.changes)
-        
-        computer.pullSignal(0.1)
-    end
+if chatBox then
+    chatBox.setName("§9§l" .. ChatTitle .. "§7§o")
 end
 
--- Entry Point
-initializeSystem()
-runMainLoop()
+while true do
+    local meData = getMEControllerStats()
+    local playersData_processed = processPlayersStatus()
+    
+    renderMEController(meData)
+    renderPlayersDisplay(playersData_processed)
+    renderFluxNetwork(getFluxNetworkStats())
+    
+    updateReactors()
+    
+    handleChatMessages(playersData_processed.changes)
+    
+    computer.pullSignal(0.1)
+end
