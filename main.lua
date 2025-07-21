@@ -756,7 +756,7 @@ if gpu then
     
     calculateFrameSizes()
     
-    gui.drawMain("&d" .. TableTitle, gui.colors["border"], "1.1")
+    gui.drawMain("&d" .. TableTitle, gui.colors["border"], "2")
     gui.drawFrame(frames.energy.x, frames.energy.y, frames.energy.width, frames.energy.height, frames.energy.title, gui.colors["border"])
     gui.drawFrame(frames.players.x, frames.players.y, frames.players.width, frames.players.height, frames.players.title, gui.colors["border"])
     gui.drawFrame(frames.reactors.x, frames.reactors.y, frames.reactors.width, frames.reactors.height, frames.reactors.title, gui.colors["border"])
