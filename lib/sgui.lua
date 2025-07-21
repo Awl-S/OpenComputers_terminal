@@ -1,3 +1,5 @@
+-- Author: https://github.com/Awl-S
+
 ugui = {}
 local gpu = require("component").gpu
 local unicode = require("unicode")

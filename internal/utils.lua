@@ -1,3 +1,5 @@
+-- Author: https://github.com/Awl-S
+
 local component = require("component")
 local filesystem = require("filesystem")
 local computer = require("computer")

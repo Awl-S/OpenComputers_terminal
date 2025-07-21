@@ -1,3 +1,5 @@
+-- Author: https://github.com/Awl-S
+
 local component = require("component")
 local gui = require("sgui")
 local utils = require("internal/utils")

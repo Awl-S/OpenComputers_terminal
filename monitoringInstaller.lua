@@ -1,5 +1,6 @@
 -- GitHub Downloader для OpenComputers (через wget)
 -- Скачивает файлы с GitHub и размещает их по нужным папкам
+-- Author: https://github.com/Awl-S
 
 local shell = require("shell")
 local filesystem = require("filesystem")
@@ -16,7 +17,7 @@ local files = {
     },
     {
         url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/internal/mecontroller.lua",
-        path = "/home/internal/mecontorller.lua"
+        path = "/home/internal/mecontroller.lua"
     },
     {
         url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/internal/players.lua",
