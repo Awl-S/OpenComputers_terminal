@@ -171,19 +171,123 @@ local function renderMEController(controllerData)
     gui.text(statsX2, statsY, "&9 Всего: &a" .. controllerData.total)
 end
 
-local playersData = {
-    {"Stawlie_", "Царь батюшка на сервере", false},
-    {"Chomski", "Царь батюшка на сервере", false},
-}
+local playersDataFile = "/home/data/playersData.txt"
 
-function getPlayerMessage(playerName)
-    for _, playerData in ipairs(playersData) do
-        if playerData[1] == playerName then
-            local message = playerData[2] or "Зашел в игру"
-            return message
+-- Функция для сохранения данных игроков в файл
+local function savePlayersData(data)
+    local file = io.open(playersDataFile, "w")
+    if file then
+        for _, player in ipairs(data) do
+            local line = string.format("%s|%s|%s|%s\n", 
+                player[1], player[2], player[3], tostring(player[4]))
+            file:write(line)
+        end
+        file:close()
+        return true
+    end
+    return false
+end
+
+-- Функция для загрузки данных игроков из файла
+local function loadPlayersData()
+    local file = io.open(playersDataFile, "r")
+    local data = {}
+    
+    if file then
+        for line in file:lines() do
+            local name, greeting, farewell, status = line:match("(.+)|(.+)|(.+)|(.+)")
+            if name and greeting and farewell and status then
+                table.insert(data, {name, greeting, farewell, status == "true"})
+            end
+        end
+        file:close()
+    else
+        -- Если файл не существует, создаем данные по умолчанию
+        data = {
+            {"Stawlie_", "Царь батюшка на сервере", "Покинул путь войина", false},
+            {"Chomski", "Царь батюшка на сервере", "Покинул сервер", false},
+        }
+        savePlayersData(data)
+    end
+    
+    return data
+end
+
+-- Загружаем данные игроков из файла при запуске
+local playersData = loadPlayersData()
+
+local permissions = {}
+-- Хэш-таблица разрешений
+for i = 1, #playersData do
+    local playerName = playersData[i][1]
+    if playerName then
+        permissions[playerName] = true
+    end
+end
+permissions[debugTest] = true
+
+-- Функция для добавления игрока
+local function addPlayer(nick, greeting, farewell)
+    greeting = greeting or "Вошел на сервер"
+    farewell = farewell or "Покинул сервер"
+    
+    -- Проверяем, не существует ли уже такой игрок
+    for _, player in ipairs(playersData) do
+        if player[1] == nick then
+            return false, "Игрок уже существует"
         end
     end
-    return "Зашел в игру"
+    
+    table.insert(playersData, {nick, greeting, farewell, false})
+    
+    if savePlayersData(playersData) then
+        return true, "Игрок добавлен успешно"
+    else
+        return false, "Ошибка сохранения файла"
+    end
+end
+
+-- Функция для обновления приветствия игрока
+local function updatePlayerGreeting(nick, greeting)
+    for i, player in ipairs(playersData) do
+        if player[1] == nick then
+            playersData[i][2] = greeting
+            if savePlayersData(playersData) then
+                return true, "Приветствие обновлено"
+            else
+                return false, "Ошибка сохранения файла"
+            end
+        end
+    end
+    return false, "Игрок не найден"
+end
+
+-- Функция для обновления прощания игрока
+local function updatePlayerFarewell(nick, farewell)
+    for i, player in ipairs(playersData) do
+        if player[1] == nick then
+            playersData[i][3] = farewell
+            if savePlayersData(playersData) then
+                return true, "Прощание обновлено"
+            else
+                return false, "Ошибка сохранения файла"
+            end
+        end
+    end
+    return false, "Игрок не найден"
+end
+
+function getPlayerMessage(playerName, messageType)
+    for _, playerData in ipairs(playersData) do
+        if playerData[1] == playerName then
+            if messageType == "farewell" then
+                return playerData[3] or "Покинул сервер"
+            else
+                return playerData[2] or "Вошел на сервер"
+            end
+        end
+    end
+    return messageType == "farewell" and "Покинул сервер" or "Вошел на сервер"
 end
 
 local function processPlayersStatus()
@@ -200,7 +304,7 @@ local function processPlayersStatus()
     for i = 1, #playersData do
         local player = playersData[i][1]
         local isOnline = computer.addUser(player)
-        local wasOnline = playersData[i][3]
+        local wasOnline = playersData[i][4]
         
         playersStatus[i] = {
             name = player,
@@ -213,15 +317,18 @@ local function processPlayersStatus()
             statusChanges[#statusChanges + 1] = {
                 type = "joined",
                 player = player,
-                message = getPlayerMessage(player)
+                message = getPlayerMessage(player, "greeting")
             }
-            playersData[i][3] = true
+            playersData[i][4] = true
+            savePlayersData(playersData)
         elseif not isOnline and wasOnline then
             statusChanges[#statusChanges + 1] = {
                 type = "left",
-                player = player
+                player = player,
+                message = getPlayerMessage(player, "farewell")
             }
-            playersData[i][3] = false
+            playersData[i][4] = false
+            savePlayersData(playersData)
         end
         
         if debugTest then
@@ -302,6 +409,77 @@ local function handleChatMessages(statusChanges)
         end
     end
 end
+
+local function chatMessageHandler()
+    while true do
+        local _, address, nick, msg = event.pull(1, "chat_message")
+        if permissions[nick] then
+            if "@stop" == msg then
+                chatBox.say("§fРежим отладки: §c§lВыключен")
+                debug = false
+            elseif "@start" == msg then
+                chatBox.say("§fРежим отладки: §a§lВключен")
+                debug = true
+            elseif "@sleep" == msg then
+                chatBox.say("§e§lПерезагружаюсь")
+                computer.shutdown(true)
+            elseif "@help" == msg then
+                chatBox.say("Версия программы 1.2")
+                chatBox.say("Максимальное количество реакторов: " .. loadFileData("/home/data/reactorInfo.txt"))
+                chatBox.say("@stop - Остановить отладку [@Работает только для реакторов]")
+                chatBox.say("@start - Включить отладку [@Работает только для реакторов]")
+                chatBox.say("@clearR - Очистить кэш реакторов")
+                chatBox.say("@clearE - Очистить кэш энергии")
+                chatBox.say("@add <ник> - Добавить игрока")
+                chatBox.say("@greeting <ник> <текст> - Установить приветствие")
+                chatBox.say("@farewell <ник> <текст> - Установить прощание")
+            elseif "@clearR" == msg then
+                local success, errormsg = os.remove("/home/data/reactorInfo.txt")
+                if success then 
+                    chatBox.say("Файл успешно удален. Перезагрузите компьютер!") 
+                else 
+                    chatBox.say("Не удалось удалить файл: " .. errormsg) 
+                end
+            elseif "@clearE" == msg then
+                local success, errormsg = os.remove("/home/data/energyInfo.txt")
+                if success then 
+                    chatBox.say("Файл успешно удален. Перезагрузите компьютер!") 
+                else 
+                    chatBox.say("Не удалось удалить файл: " .. errormsg) 
+                end
+            elseif msg:match("^@add ") then
+                local playerNick = msg:match("^@add (.+)")
+                if playerNick then
+                    local success, message = addPlayer(playerNick)
+                    chatBox.say(message)
+                    if success then
+                        permissions[playerNick] = true  -- Даем разрешения новому игроку
+                    end
+                else
+                    chatBox.say("Использование: @add <ник>")
+                end
+            elseif msg:match("^@greeting ") then
+                local playerNick, greetingText = msg:match("^@greeting (%S+) (.+)")
+                if playerNick and greetingText then
+                    local success, message = updatePlayerGreeting(playerNick, greetingText)
+                    chatBox.say(message)
+                else
+                    chatBox.say("Использование: @greeting <ник> <текст>")
+                end
+            elseif msg:match("^@farewell ") then
+                local playerNick, farewellText = msg:match("^@farewell (%S+) (.+)")
+                if playerNick and farewellText then
+                    local success, message = updatePlayerFarewell(playerNick, farewellText)
+                    chatBox.say(message)
+                else
+                    chatBox.say("Использование: @farewell <ник> <текст>")
+                end
+            end
+        end
+    end
+end
+
+thread.create(chatMessageHandler)
 
 function ensureDirectoryExists(path)
     if not filesystem.exists(path) then
