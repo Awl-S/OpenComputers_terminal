@@ -248,6 +248,21 @@ local function addPlayer(nick, greeting, farewell)
     end
 end
 
+-- Функция для удаления игрока
+local function removePlayer(nick)
+    for i, player in ipairs(playersData) do
+        if player[1] == nick then
+            table.remove(playersData, i)
+            if savePlayersData(playersData) then
+                return true, "Игрок удален успешно"
+            else
+                return false, "Ошибка сохранения файла"
+            end
+        end
+    end
+    return false, "Игрок не найден"
+end
+
 -- Функция для обновления приветствия игрока
 local function updatePlayerGreeting(nick, greeting)
     for i, player in ipairs(playersData) do
@@ -344,6 +359,7 @@ local function processPlayersStatus()
     }
 end
 
+-- Исправленная функция рендера (убрано условие hasChanges)
 local function renderPlayersDisplay(processedData)
     local innerBounds = getFrameInnerBounds("players")
     
@@ -354,45 +370,43 @@ local function renderPlayersDisplay(processedData)
     local maxRowsPerColumn = innerBounds.height - 1
     local columnWidth = math.floor(innerBounds.width / maxColumns)
     
-    local hasChanges = #processedData.changes > 0
+    local maxPlayers = maxColumns * maxRowsPerColumn
     
-    if hasChanges then
-        local maxPlayers = maxColumns * maxRowsPerColumn
+    -- Очищаем область отображения
+    for i = 1, maxPlayers do
+        local columnIndex = (i - 1) % maxColumns
+        local rowIndex = math.floor((i - 1) / maxColumns)
         
-        for i = 1, maxPlayers do
-            local columnIndex = (i - 1) % maxColumns
-            local rowIndex = math.floor((i - 1) / maxColumns)
+        if rowIndex < maxRowsPerColumn then
+            local x = innerBounds.x + columnIndex * columnWidth
+            local y = innerBounds.y + 1 + rowIndex
             
-            if rowIndex < maxRowsPerColumn then
-                local x = innerBounds.x + columnIndex * columnWidth
-                local y = innerBounds.y + 1 + rowIndex
-                
-                if x <= innerBounds.maxX - playerNameMaxLength and y <= innerBounds.maxY then
-                    gui.text(x, y, string.rep(" ", math.min(columnWidth - 1, playerNameMaxLength)))
-                end
+            if x <= innerBounds.maxX - playerNameMaxLength and y <= innerBounds.maxY then
+                gui.text(x, y, string.rep(" ", math.min(columnWidth - 1, playerNameMaxLength)))
             end
         end
+    end
+    
+    -- Отображаем игроков
+    for i = 1, #processedData.players do
+        local playerInfo = processedData.players[i]
         
-        for i = 1, #processedData.players do
-            local playerInfo = processedData.players[i]
+        local columnIndex = (i - 1) % maxColumns
+        local rowIndex = math.floor((i - 1) / maxColumns)
+        
+        if rowIndex < maxRowsPerColumn then
+            local x = innerBounds.x + columnIndex * columnWidth
+            local y = innerBounds.y + 1 + rowIndex
             
-            local columnIndex = (i - 1) % maxColumns
-            local rowIndex = math.floor((i - 1) / maxColumns)
-            
-            if rowIndex < maxRowsPerColumn then
-                local x = innerBounds.x + columnIndex * columnWidth
-                local y = innerBounds.y + 1 + rowIndex
-                
-                if x <= innerBounds.maxX - playerNameMaxLength and y <= innerBounds.maxY then
-                    local prefix = ""
-                    if playerInfo.isOnline then
-                        prefix = "&2"
-                    else
-                        prefix = "&4"
-                    end
-                    prefix = prefix .. playerInfo.name
-                    gui.text(x, y, prefix)
+            if x <= innerBounds.maxX - playerNameMaxLength and y <= innerBounds.maxY then
+                local prefix = ""
+                if playerInfo.isOnline then
+                    prefix = "&2"  -- Зеленый для онлайн игроков
+                else
+                    prefix = "&4"  -- Красный для оффлайн игроков
                 end
+                prefix = prefix .. playerInfo.name
+                gui.text(x, y, prefix)
             end
         end
     end
@@ -423,6 +437,7 @@ local function chatMessageHandler()
                 chatBox.say("@clearR - Очистить кэш реакторов")
                 chatBox.say("@clearE - Очистить кэш энергии")
                 chatBox.say("@add <ник> - Добавить игрока")
+                chatBox.say("@remove <ник> - Удалить игрока")
                 chatBox.say("@greeting <ник> <текст> - Установить приветствие")
                 chatBox.say("@farewell <ник> <текст> - Установить прощание")
             elseif "@clearR" == msg then
@@ -449,6 +464,17 @@ local function chatMessageHandler()
                     end
                 else
                     chatBox.say("Использование: @add <ник>")
+                end
+            elseif msg:match("^@remove ") then
+                local playerNick = msg:match("^@remove (.+)")
+                if playerNick then
+                    local success, message = removePlayer(playerNick)
+                    chatBox.say(message)
+                    if success then
+                        permissions[playerNick] = nil  -- Убираем разрешения у удаленного игрока
+                    end
+                else
+                    chatBox.say("Использование: @remove <ник>")
                 end
             elseif msg:match("^@greeting ") then
                 local playerNick, greetingText = msg:match("^@greeting (%S+) (.+)")
