@@ -38,8 +38,8 @@ end
 local frames = {
     energy = {x = 2, y = 2, width = 34, height = 8, title = "Энерго-сеть"},
     players = {x = 38, y = 2, width = 0, height = 8, title = "Игроки"},
-    reactors = {x = 2, y = 10, width = 0, height = 13, title = "Реакторы"},
-    meProcesses = {x = 2, y = 23, width = 0, height = 17, title = "МЭ Процессы создания"},
+    reactors = {x = 2, y = 10, width = 0, height = 20, title = "Реакторы"},
+    meProcesses = {x = 2, y = 30, width = 0, height = 17, title = "МЭ Процессы создания"},
 }
 
 local screenWidth, screenHeight = 120, 40
@@ -413,20 +413,12 @@ local function chatMessageHandler()
     while true do
         local _, address, nick, msg = event.pull(1, "chat_message")
         if permissions[nick] then
-            if "@stop" == msg then
-                chatBox.say("§fРежим отладки: §c§lВыключен")
-                debug = false
-            elseif "@start" == msg then
-                chatBox.say("§fРежим отладки: §a§lВключен")
-                debug = true
-            elseif "@sleep" == msg then
+            if "@sleep" == msg then
                 chatBox.say("§e§lПерезагружаюсь")
                 computer.shutdown(true)
             elseif "@help" == msg then
-                chatBox.say("Версия программы 1.2")
+                chatBox.say("Версия программы 2")
                 chatBox.say("Максимальное количество реакторов: " .. loadFileData("/home/data/reactorInfo.txt"))
-                chatBox.say("@stop - Остановить отладку [@Работает только для реакторов]")
-                chatBox.say("@start - Включить отладку [@Работает только для реакторов]")
                 chatBox.say("@clearR - Очистить кэш реакторов")
                 chatBox.say("@clearE - Очистить кэш энергии")
                 chatBox.say("@add <ник> - Добавить игрока")
@@ -690,7 +682,7 @@ local function renderNuclearReactors(stats)
     
     if stats.count > 0 then
         local summaryY = b.maxY
-        gui.text(b.x, summaryY, string.rep(" ", clearWidth))
+        gui.text(b.x, summaryY, string.rep(" ", clearWidth+30))
         gui.text(b.x, summaryY, string.format("&fΣ: &6%s &b%s mB/s &fРеакторов: &e%d", 
             formatReactorEnergy(stats.totalEnergy), stats.totalCoolant, stats.count))
     end
