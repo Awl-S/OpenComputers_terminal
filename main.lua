@@ -1,5 +1,3 @@
--- pastebin get byMPenjT 1
-
 local component = require("component")
 local computer = require("computer")
 local term = require("term")
