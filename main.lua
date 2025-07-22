@@ -36,8 +36,8 @@ end
 local frames = {
     energy = {x = 2, y = 2, width = 40, height = 8, title = "Энерго-сеть"},
     players = {x = 42, y = 2, width = 0, height = 8, title = "Игроки"},
-    reactors = {x = 2, y = 10, width = 0, height = 20, title = "Реакторы"},
-    meProcesses = {x = 2, y = 30, width = 0, height = 12, title = "МЭ Процессы создания"},
+    reactors = {x = 2, y = 10, width = 0, height = 16, title = "Реакторы"},
+    meProcesses = {x = 2, y = 30, width = 0, height = 10, title = "МЭ Процессы создания"},
 }
 
 local screenWidth, screenHeight = 120, 40
