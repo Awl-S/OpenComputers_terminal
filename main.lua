@@ -420,7 +420,7 @@ local function handleChatMessages(statusChanges)
         if change.type == "joined" then
             chatBox.say("§e" .. change.player .. "§a§l " .. change.message)
         elseif change.type == "left" then
-            chatBox.say("§e" .. change.player .. "§c§l покинул игру!")
+            chatBox.say("§e" .. change.player .. "§c§l"  .. change.message)
         end
     end
 end
