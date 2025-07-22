@@ -663,22 +663,19 @@ end
 
 local function renderNuclearReactors(stats)
     local b = getFrameInnerBounds("reactors")
-    local cols = 3  -- Уменьшили до 2 колонок для размещения большей информации
+    local cols = 3
     local reactorWidth = math.floor(b.width / cols) - 1
-    local reactorHeight = 7  -- Увеличили высоту для новых данных
+    local reactorHeight = 7
     local separatorWidth = 1
     
-    local clearWidth = 50  -- Увеличили ширину очистки
+    local clearWidth = 70  -- Увеличили ширину очистки
     
-    if not reactorsClearedOnce or lastReactorCount ~= stats.count then
-        for y = b.y, b.maxY do
-            gui.text(b.x, y, string.rep(" ", clearWidth))
-        end
-        reactorsClearedOnce = true
-        lastReactorCount = stats.count
+    -- Очищаем всю область каждый раз для предотвращения наложения текста
+    for y = b.y, b.maxY do
+        gui.text(b.x, y, string.rep(" ", clearWidth))
     end
     
-    for i = 1, math.min(6, #stats.reactors) do  -- Уменьшили до 4 реакторов из-за большего размера
+    for i = 1, math.min(6, #stats.reactors) do
         local reactor = stats.reactors[i]
         local colIndex = (i - 1) % cols
         local rowIndex = math.floor((i - 1) / cols)
@@ -690,6 +687,11 @@ local function renderNuclearReactors(stats)
         local tempColor = reactor.temp >= REACTOR_TEMP_WARN and "&c" or "&f"
         local statusColor = reactor.activated and "&a" or "&4"
         local statusText = reactor.activated and "On" or "Off"
+        
+        -- Очищаем область каждого реактора перед выводом
+        for lineY = y, y + reactorHeight - 1 do
+            gui.text(x, lineY, string.rep(" ", reactorWidth))
+        end
         
         -- Заголовок реактора
         gui.text(x, y, reactorColor .. "Реактор №" .. reactor.id .. " (" .. reactor.type .. ")")
