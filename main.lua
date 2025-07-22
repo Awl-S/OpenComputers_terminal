@@ -604,6 +604,10 @@ local function formatReactorEnergy(rf)
     end
 end
 
+-- Глобальная переменная для отслеживания какой реактор обновлять
+local reactorUpdateIndex = 1
+local lastReactorData = {} -- Кэш предыдущих значений
+
 local function getNuclearReactorsStats()
     local reactorsAddr = getComponentsByType("htc_reactors_nuclear_reactor")
     local reactorsData = {}
@@ -661,6 +665,42 @@ local function getNuclearReactorsStats()
     }
 end
 
+local function hasReactorChanged(newReactor, oldReactor)
+    if not oldReactor then return true end
+    
+    return newReactor.online ~= oldReactor.online or
+           newReactor.activated ~= oldReactor.activated or
+           newReactor.level ~= oldReactor.level or
+           newReactor.energyGen ~= oldReactor.energyGen or
+           newReactor.temp ~= oldReactor.temp or
+           newReactor.coolant ~= oldReactor.coolant or
+           newReactor.type ~= oldReactor.type
+end
+
+local function renderSingleReactor(reactor, x, y, reactorWidth, reactorHeight)
+    local reactorColor = reactor.online and "&a" or "&4"
+    local tempColor = reactor.temp >= REACTOR_TEMP_WARN and "&c" or "&f"
+    local statusColor = reactor.activated and "&a" or "&4"
+    local statusText = reactor.activated and "On" or "Off"
+    
+    -- Очищаем только область этого реактора
+    for lineY = y, y + reactorHeight - 1 do
+        gui.text(x, lineY, string.rep(" ", reactorWidth))
+    end
+    
+    -- Выводим данные реактора
+    gui.text(x, y, reactorColor .. "Реактор №" .. reactor.id .. " (" .. reactor.type .. ")")
+    gui.text(x, y + 1, "&fВключен: " .. statusColor .. statusText)
+    gui.text(x, y + 2, "&fУровень: &e" .. string.format("%d", reactor.level))
+    gui.text(x, y + 3, "&fЭнергия: &6" .. formatReactorEnergy(reactor.energyGen))
+    gui.text(x, y + 4, "&fТемп:    " .. tempColor .. reactor.temp .. "°C")
+    if reactor.type == "Жидкостный" then
+        gui.text(x, y + 5, "&fРасход:  &b" .. reactor.coolant .. " mB/s")
+    else
+        gui.text(x, y + 5, "&7Воздушное охлаждение")
+    end
+end
+
 local function renderNuclearReactors(stats)
     local b = getFrameInnerBounds("reactors")
     local cols = 3
@@ -668,46 +708,49 @@ local function renderNuclearReactors(stats)
     local reactorHeight = 7
     local separatorWidth = 1
     
-    local clearWidth = 70  -- Увеличили ширину очистки
-    
-    -- Очищаем всю область каждый раз для предотвращения наложения текста
-    for y = b.y, b.maxY do
-        gui.text(b.x, y, string.rep(" ", clearWidth))
-    end
-    
-    for i = 1, math.min(6, #stats.reactors) do
-        local reactor = stats.reactors[i]
-        local colIndex = (i - 1) % cols
-        local rowIndex = math.floor((i - 1) / cols)
-        
-        local x = b.x + colIndex * (reactorWidth + separatorWidth)
-        local y = b.y + rowIndex * (reactorHeight + 1)
-        
-        local reactorColor = reactor.online and "&a" or "&4"
-        local tempColor = reactor.temp >= REACTOR_TEMP_WARN and "&c" or "&f"
-        local statusColor = reactor.activated and "&a" or "&4"
-        local statusText = reactor.activated and "On" or "Off"
-        
-        -- Очищаем область каждого реактора перед выводом
-        for lineY = y, y + reactorHeight - 1 do
-            gui.text(x, lineY, string.rep(" ", reactorWidth))
+    -- Первый раз отрисовываем все реакторы
+    if #lastReactorData == 0 then
+        for i = 1, math.min(6, #stats.reactors) do
+            local reactor = stats.reactors[i]
+            local colIndex = (i - 1) % cols
+            local rowIndex = math.floor((i - 1) / cols)
+            
+            local x = b.x + colIndex * (reactorWidth + separatorWidth)
+            local y = b.y + rowIndex * (reactorHeight + 1)
+            
+            renderSingleReactor(reactor, x, y, reactorWidth, reactorHeight)
+        end
+        lastReactorData = {}
+        for i = 1, #stats.reactors do
+            lastReactorData[i] = stats.reactors[i]
+        end
+    else
+
+        if reactorUpdateIndex <= math.min(6, #stats.reactors) then
+            local reactor = stats.reactors[reactorUpdateIndex]
+            local oldReactor = lastReactorData[reactorUpdateIndex]
+            
+            if hasReactorChanged(reactor, oldReactor) then
+                local colIndex = (reactorUpdateIndex - 1) % cols
+                local rowIndex = math.floor((reactorUpdateIndex - 1) / cols)
+                
+                local x = b.x + colIndex * (reactorWidth + separatorWidth)
+                local y = b.y + rowIndex * (reactorHeight + 1)
+                
+                renderSingleReactor(reactor, x, y, reactorWidth, reactorHeight)
+                lastReactorData[reactorUpdateIndex] = reactor
+            end
         end
         
-        -- Заголовок реактора
-        gui.text(x, y, reactorColor .. "Реактор №" .. reactor.id .. " (" .. reactor.type .. ")")
-        gui.text(x, y + 1, "&fВключен: " .. statusColor .. statusText)
-        gui.text(x, y + 2, "&fУровень: &e" .. string.format("%d", reactor.level))
-        gui.text(x, y + 3, "&fЭнергия: &6" .. formatReactorEnergy(reactor.energyGen))
-        gui.text(x, y + 4, "&fТемп:    " .. tempColor .. reactor.temp .. "°C")
-        if reactor.type == "Жидкостный" then
-            gui.text(x, y + 5, "&fРасход:  &b" .. reactor.coolant .. " mB/s")
-        else
-            gui.text(x, y + 5, "&7Воздушное охлаждение")
+        reactorUpdateIndex = reactorUpdateIndex + 1
+        if reactorUpdateIndex > math.min(6, #stats.reactors) then
+            reactorUpdateIndex = 1
         end
     end
     
     if stats.count > 0 then
         local summaryY = b.maxY
+        local clearWidth = 70
         gui.text(b.x, summaryY, string.rep(" ", clearWidth))
         gui.text(b.x, summaryY, string.format("&fΣ: &6%s &b%s mB/s &fРеакторов: &e%d", 
             formatReactorEnergy(stats.totalEnergy), stats.totalCoolant, stats.count))
