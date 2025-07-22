@@ -620,7 +620,7 @@ local function getNuclearReactorsStats()
         -- Новые данные
         local success6, reactorLevel = pcall(function() return r.getReactorLevel() end)
         local success7, reactorType = pcall(function() return r.isActiveCooling() end)
-        local success8, isOn = pcall(function() return r.activate() end) -- Проверка состояния включения
+        local success8, isOn = pcall(function() return r.hasWork() end) -- Проверка состояния включения
         
         gen = success2 and gen or 0
         mb = success3 and mb or 0
@@ -690,7 +690,7 @@ local function renderNuclearReactors(stats)
         -- Заголовок реактора
         gui.text(x, y, reactorColor .. "Реактор №" .. reactor.id .. " (" .. reactor.type .. ")")
         gui.text(x, y + 1, "&fВключен: " .. statusColor .. statusText)
-        gui.text(x, y + 2, "&fУровень: &e" .. string.format("%.1f%%", reactor.level))
+        gui.text(x, y + 2, "&fУровень: &e" .. string.format("%d", reactor.level))
         gui.text(x, y + 3, "&fЭнергия: &6" .. formatReactorEnergy(reactor.energyGen))
         gui.text(x, y + 4, "&fТемп:    " .. tempColor .. reactor.temp .. "°C")
         if reactor.type == "Жидкостный" then
