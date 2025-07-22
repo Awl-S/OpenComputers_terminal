@@ -618,7 +618,7 @@ local function getNuclearReactorsStats()
         local success5, hasWork = pcall(function() return r.hasWork() end)
         
         -- Новые данные
-        local success6, reactorLevel = pcall(function() return r.getOnlineNodeStatus() end)
+        local success6, reactorLevel = pcall(function() return r.getReactorLevel() end)
         local success7, reactorType = pcall(function() return r.isActiveCooling() end)
         local success8, isOn = pcall(function() return r.activate() end) -- Проверка состояния включения
         
