@@ -173,7 +173,6 @@ local function renderMEController(controllerData)
     gui.text(statsX2, statsY, "&9 Всего: &a" .. controllerData.total)
 end
 
-
 local playersDataFile = "/home/data/playersData.txt"
 
 -- Функция для сохранения данных игроков в файл
@@ -230,7 +229,7 @@ permissions[debugTest] = true
 
 -- Функция для добавления игрока
 local function addPlayer(nick, greeting, farewell)
-    greeting = greeting or "Вошел на сервер"
+    greeting = greeting or "Зашёл не в ту дверь"
     farewell = farewell or "Покинул сервер"
     
     -- Проверяем, не существует ли уже такой игрок
@@ -298,6 +297,7 @@ function getPlayerMessage(playerName, messageType)
     for _, playerData in ipairs(playersData) do
         if playerData[1] == playerName then
             if messageType == "farewell" then
+                chatBox.say(playerData[3])
                 return playerData[3] or "Покинул сервер"
             else
                 return playerData[2] or "Вошел на сервер"
@@ -331,34 +331,21 @@ local function processPlayersStatus()
         }
         
         if isOnline and not wasOnline then
-            local greetingMessage = getPlayerMessage(player, "greeting")
             statusChanges[#statusChanges + 1] = {
                 type = "joined",
                 player = player,
-                message = greetingMessage
+                message = getPlayerMessage(player, "greeting")
             }
             playersData[i][4] = true
             savePlayersData(playersData)
-            
-            -- Отправляем сообщение в чат
-            if chatBox then
-                chatBox.say("§a" .. greetingMessage)
-            end
-            
         elseif not isOnline and wasOnline then
-            local farewellMessage = getPlayerMessage(player, "farewell")
             statusChanges[#statusChanges + 1] = {
                 type = "left",
                 player = player,
-                message = farewellMessage
+                message = getPlayerMessage(player, "farewell")
             }
             playersData[i][4] = false
             savePlayersData(playersData)
-            
-            -- Отправляем сообщение в чат
-            if chatBox then
-                chatBox.say("§c" .. farewellMessage)
-            end
         end
         
         if debugTest then
