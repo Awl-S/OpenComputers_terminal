@@ -147,7 +147,11 @@ local function renderMEController(controllerData)
         local y = yPos + rowIndex
         
         if y <= innerBounds.maxY - 2 and x <= innerBounds.maxX - cpuTextLength then
-            gui.text(x, y, "&fCPU #" .. processor.id .. ": " .. statusColor .. processor.status)
+            if processor.id >= 0 and processor.id <= 9 then
+                gui.text(x, y, "&fCPU #" .. processor.id .. ":  " .. statusColor .. processor.status)
+            else
+                gui.text(x, y, "&fCPU #" .. processor.id .. ": " .. statusColor .. processor.status)
+            end
         end
     end
     
