@@ -616,18 +616,29 @@ local function getNuclearReactorsStats()
         local success3, mb = pcall(function() return r.getFluidCoolantConsume() end)
         local success4, t = pcall(function() return r.getTemperature() end)
         local success5, hasWork = pcall(function() return r.hasWork() end)
-
+        
+        -- Новые данные
+        local success6, reactorLevel = pcall(function() return r.getOnlineNodeStatus() end)
+        local success7, reactorType = pcall(function() return r.isActiveCooling() end)
+        local success8, isOn = pcall(function() return r.activate() end) -- Проверка состояния включения
+        
         gen = success2 and gen or 0
         mb = success3 and mb or 0
         t = success4 and t or 0
         hasWork = success5 and hasWork or false
+        reactorLevel = success6 and reactorLevel or 0
+        isLiquidCooled = success7 and reactorType or false
+        isActivated = success8 and isOn or false
 
         reactorsData[#reactorsData + 1] = {
-            id        = i,
-            online    = hasWork,
-            energyGen = gen,
-            coolant   = mb,
-            temp      = t
+            id           = i,
+            online       = hasWork,
+            activated    = isActivated,  -- Включен: On/Off
+            level        = reactorLevel, -- Уровень реактора
+            type         = isLiquidCooled and "Жидкостный" or "Воздушный", -- Тип реактора
+            energyGen    = gen,          -- Энергия
+            temp         = t,            -- Температура
+            coolant      = mb            -- Потребление жидкости (если жидкостный)
         }
 
         totalEnergy  = totalEnergy  + gen
@@ -648,12 +659,12 @@ end
 
 local function renderNuclearReactors(stats)
     local b = getFrameInnerBounds("reactors")
-    local cols = 3
+    local cols = 3  -- Уменьшили до 2 колонок для размещения большей информации
     local reactorWidth = math.floor(b.width / cols) - 1
-    local reactorHeight = 4
+    local reactorHeight = 7  -- Увеличили высоту для новых данных
     local separatorWidth = 1
     
-    local clearWidth = 30
+    local clearWidth = 50  -- Увеличили ширину очистки
     
     if not reactorsClearedOnce or lastReactorCount ~= stats.count then
         for y = b.y, b.maxY do
@@ -663,7 +674,7 @@ local function renderNuclearReactors(stats)
         lastReactorCount = stats.count
     end
     
-    for i = 1, math.min(6, #stats.reactors) do
+    for i = 1, math.min(6, #stats.reactors) do  -- Уменьшили до 4 реакторов из-за большего размера
         local reactor = stats.reactors[i]
         local colIndex = (i - 1) % cols
         local rowIndex = math.floor((i - 1) / cols)
@@ -673,16 +684,25 @@ local function renderNuclearReactors(stats)
         
         local reactorColor = reactor.online and "&a" or "&4"
         local tempColor = reactor.temp >= REACTOR_TEMP_WARN and "&c" or "&f"
+        local statusColor = reactor.activated and "&a" or "&4"
+        local statusText = reactor.activated and "On" or "Off"
         
-        gui.text(x, y, reactorColor .. "Реактор №" .. reactor.id)
-        gui.text(x, y + 1, "&fЭнергия: &6" .. formatReactorEnergy(reactor.energyGen))
-        gui.text(x, y + 2, "&fРасход: &b" .. reactor.coolant .. " mB/s")
-        gui.text(x, y + 3, "&fТемп: " .. tempColor .. reactor.temp .. "°C")
+        -- Заголовок реактора
+        gui.text(x, y, reactorColor .. "Реактор №" .. reactor.id .. " (" .. reactor.type .. ")")
+        gui.text(x, y + 1, "&fВключен: " .. statusColor .. statusText)
+        gui.text(x, y + 2, "&fУровень: &e" .. string.format("%.1f%%", reactor.level))
+        gui.text(x, y + 3, "&fЭнергия: &6" .. formatReactorEnergy(reactor.energyGen))
+        gui.text(x, y + 4, "&fТемп: " .. tempColor .. reactor.temp .. "°C")
+        if reactor.type == "Жидкостный" then
+            gui.text(x, y + 5, "&fРасход: &b" .. reactor.coolant .. " mB/s")
+        else
+            gui.text(x, y + 5, "&7Воздушное охлаждение")
+        end
     end
     
     if stats.count > 0 then
         local summaryY = b.maxY
-        gui.text(b.x, summaryY, string.rep(" ", clearWidth+30))
+        gui.text(b.x, summaryY, string.rep(" ", clearWidth))
         gui.text(b.x, summaryY, string.format("&fΣ: &6%s &b%s mB/s &fРеакторов: &e%d", 
             formatReactorEnergy(stats.totalEnergy), stats.totalCoolant, stats.count))
     end
