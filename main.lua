@@ -422,7 +422,6 @@ local function chatMessageHandler()
                 computer.shutdown(true)
             elseif "@help" == msg then
                 chatBox.say("Версия программы 2")
-                chatBox.say("Максимальное количество реакторов: " .. loadFileData(REACTOR_FILE))
                 chatBox.say("@clearR - Очистить кэш реакторов")
                 chatBox.say("@clearE - Очистить кэш энергии")
                 chatBox.say("@add <ник> - Добавить игрока")
