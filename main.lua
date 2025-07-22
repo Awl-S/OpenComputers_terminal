@@ -720,7 +720,7 @@ local function renderSingleReactor(reactor, x, y, reactorWidth, reactorHeight)
     if reactor.type == "Жидкостный" then
         gui.text(x, y + 5, "&fРасход:  &b" .. reactor.coolant .. " mB/s")
     else
-        gui.text(x, y + 5, "&7Воздушное охлаждение")
+        -- gui.text(x, y + 5, "&7Воздушное охлаждение")
     end
 end
 
