@@ -666,7 +666,7 @@ local function getNuclearReactorsStats()
             online       = hasWork,
             activated    = isActivated,  -- Включен: On/Off
             level        = reactorLevel, -- Уровень реактора
-            type         = isLiquidCooled and "&bЖидкостный" or "&aВоздушный", -- Тип реактора
+            type         = isLiquidCooled and "&bЖидкостный" or "&eВоздушный", -- Тип реактора
             energyGen    = gen,          -- Энергия
             temp         = t,            -- Температура
             coolant      = mb            -- Потребление жидкости (если жидкостный)
