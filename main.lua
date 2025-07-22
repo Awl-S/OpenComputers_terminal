@@ -420,7 +420,7 @@ local function handleChatMessages(statusChanges)
         if change.type == "joined" then
             chatBox.say("§e" .. change.player .. "§a§l " .. change.message)
         elseif change.type == "left" then
-            chatBox.say("§e" .. change.player .. "§c§l"  .. change.message)
+            chatBox.say("§e" .. change.player .. "§c§l "  .. change.message)
         end
     end
 end
@@ -666,7 +666,7 @@ local function getNuclearReactorsStats()
             online       = hasWork,
             activated    = isActivated,  -- Включен: On/Off
             level        = reactorLevel, -- Уровень реактора
-            type         = isLiquidCooled and "Жидкостный" or "Воздушный", -- Тип реактора
+            type         = isLiquidCooled and "&bЖидкостный" or "&aВоздушный", -- Тип реактора
             energyGen    = gen,          -- Энергия
             temp         = t,            -- Температура
             coolant      = mb            -- Потребление жидкости (если жидкостный)
