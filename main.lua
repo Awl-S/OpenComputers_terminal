@@ -692,9 +692,9 @@ local function renderNuclearReactors(stats)
         gui.text(x, y + 1, "&fВключен: " .. statusColor .. statusText)
         gui.text(x, y + 2, "&fУровень: &e" .. string.format("%.1f%%", reactor.level))
         gui.text(x, y + 3, "&fЭнергия: &6" .. formatReactorEnergy(reactor.energyGen))
-        gui.text(x, y + 4, "&fТемп: " .. tempColor .. reactor.temp .. "°C")
+        gui.text(x, y + 4, "&fТемп:    " .. tempColor .. reactor.temp .. "°C")
         if reactor.type == "Жидкостный" then
-            gui.text(x, y + 5, "&fРасход: &b" .. reactor.coolant .. " mB/s")
+            gui.text(x, y + 5, "&fРасход:  &b" .. reactor.coolant .. " mB/s")
         else
             gui.text(x, y + 5, "&7Воздушное охлаждение")
         end
