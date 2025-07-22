@@ -173,6 +173,7 @@ local function renderMEController(controllerData)
     gui.text(statsX2, statsY, "&9 Всего: &a" .. controllerData.total)
 end
 
+
 local playersDataFile = "/home/data/playersData.txt"
 
 -- Функция для сохранения данных игроков в файл
@@ -330,21 +331,34 @@ local function processPlayersStatus()
         }
         
         if isOnline and not wasOnline then
+            local greetingMessage = getPlayerMessage(player, "greeting")
             statusChanges[#statusChanges + 1] = {
                 type = "joined",
                 player = player,
-                message = getPlayerMessage(player, "greeting")
+                message = greetingMessage
             }
             playersData[i][4] = true
             savePlayersData(playersData)
+            
+            -- Отправляем сообщение в чат
+            if chatBox then
+                chatBox.say("§a" .. greetingMessage)
+            end
+            
         elseif not isOnline and wasOnline then
+            local farewellMessage = getPlayerMessage(player, "farewell")
             statusChanges[#statusChanges + 1] = {
                 type = "left",
                 player = player,
-                message = getPlayerMessage(player, "farewell")
+                message = farewellMessage
             }
             playersData[i][4] = false
             savePlayersData(playersData)
+            
+            -- Отправляем сообщение в чат
+            if chatBox then
+                chatBox.say("§c" .. farewellMessage)
+            end
         end
         
         if debugTest then
