@@ -72,7 +72,7 @@ function ugui.drawMain(nameTable, color, version)
     local width, height = gpu.getResolution()
     ugui.drawCube(1, 1, width, height, color)  
     ugui.text(math.floor((width/2)-unicode.len(nameTable)/2), 1,  nameTable)
-    ugui.text(5, height, "&9[Author: Stawlie]")
+    ugui.text(5, height, "&9[Author: Stawlie_] github.com/Awl-S/Monitoring-Ala")
     vers = "&9[v" .. version .. "]"
     ugui.text(width-#vers-5, height, vers)
 end
