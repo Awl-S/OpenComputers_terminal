@@ -712,7 +712,7 @@ local function renderSingleReactor(reactor, x, y, reactorWidth, reactorHeight)
     end
     
     -- Выводим данные реактора
-    gui.text(x, y, reactorColor .. "Реактор №" .. reactor.id .. " (" .. reactor.type .. ")")
+    gui.text(x, y, reactorColor .. "Реактор №" .. reactor.id .. " (" .. reactor.type .. reactorColor .. ")")
     gui.text(x, y + 1, "&fВключен: " .. statusColor .. statusText)
     gui.text(x, y + 2, "&fУровень: &e" .. string.format("%d", reactor.level))
     gui.text(x, y + 3, "&fЭнергия: &6" .. formatReactorEnergy(reactor.energyGen))
