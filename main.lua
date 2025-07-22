@@ -297,8 +297,7 @@ function getPlayerMessage(playerName, messageType)
     for _, playerData in ipairs(playersData) do
         if playerData[1] == playerName then
             if messageType == "farewell" then
-                chatBox.say(playerData[3])
-                return playerData[3] or "Покинул сервер"
+                return playerData[3]
             else
                 return playerData[2] or "Вошел на сервер"
             end
