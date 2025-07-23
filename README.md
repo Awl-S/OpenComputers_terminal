@@ -75,7 +75,6 @@ main.lua
 
 ![Использование команд](https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/data/chatbox.png)
 
-
 ### Первоначальная настройка
 
 1. Подключите все необходимые компоненты к серверной стойке
