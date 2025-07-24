@@ -456,7 +456,7 @@ local function chatMessageHandler()
                 else
                     chatBox.say("Не удалось удалить файл: " .. errormsg)
                 end
-            elseif "@getFluid" == msg then
+            elseif "@getfluid" == msg then
                 chatBox.say("Текущее минимальное количество жидкости: " .. MIN_COUNT_FLUID_DROP .. " мл")
             elseif msg:match("^@setfluid ") then
                 local fluidAmount = msg:match("^@setfluid (%d+)")
@@ -779,8 +779,9 @@ local function getNuclearReactorsStats()
     local reactorsAddr = getComponentsByType("htc_reactors_nuclear_reactor")
     local reactorsData = {}
 
+    local fluidCount = 0
     if component.isAvailable("me_controller") then
-        local fluidCount = checkFluidInME()
+        fluidCount = checkFluidInME()
         if fluidCount <= MIN_COUNT_FLUID_DROP then
             deactivationReactors() 
         else
@@ -828,7 +829,6 @@ local function getNuclearReactorsStats()
         totalEnergy  = totalEnergy  + gen
         totalCoolant = totalCoolant + mb
         hottest      = math.max(hottest, t)
-
         ::continue::
     end
 
@@ -838,6 +838,7 @@ local function getNuclearReactorsStats()
         totalEnergy     = totalEnergy,
         totalCoolant    = totalCoolant,
         hottestTemp     = hottest,
+        fluidCount      = fluidCount
     }
 end
 
@@ -926,8 +927,8 @@ local function renderNuclearReactors(stats)
         local summaryY = b.maxY
         local clearWidth = 70
         gui.text(b.x, summaryY, string.rep(" ", clearWidth))
-        gui.text(b.x, summaryY, string.format("&fΣ: &6%s &b%s mB/s &fРеакторов: &e%d", 
-            formatReactorEnergy(stats.totalEnergy), stats.totalCoolant, stats.count))
+        gui.text(b.x, summaryY, string.format("&fΣ: &6%s &b%s mB/s &fРеакторов: &e%d Жидкости: %d / %d", 
+            formatReactorEnergy(stats.totalEnergy), stats.totalCoolant, stats.count, stats.fluidCount, MIN_COUNT_FLUID_DROP))
     end
 end
 
