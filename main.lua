@@ -440,8 +440,8 @@ local function chatMessageHandler()
                 chatBox.say("@remove <ник> - Удалить игрока")
                 chatBox.say("@greeting <ник> <текст> - Установить приветствие")
                 chatBox.say("@farewell <ник> <текст> - Установить прощание")
-                chatBox.say("@setFluid <количество> - Установить мин. кол-во жидкости")
-                chatBox.say("@getFluid - Показать текущее мин. кол-во жидкости")
+                chatBox.say("@setfluid <количество> - Установить мин. кол-во жидкости")
+                chatBox.say("@getfluid - Показать текущее мин. кол-во жидкости")
             elseif "@clearR" == msg then
                 local success, errormsg = os.remove(REACTOR_FILE)
                 if success then
@@ -456,7 +456,9 @@ local function chatMessageHandler()
                 else
                     chatBox.say("Не удалось удалить файл: " .. errormsg)
                 end
-            elseif "@getfluid" == msg then
+            elseif msg:match("^@startreactor ") then
+                activationReactorsAll()
+            elseif msg:match("^@getfluid ") then
                 chatBox.say("Текущее минимальное количество жидкости: " .. MIN_COUNT_FLUID_DROP .. " мл")
             elseif msg:match("^@setfluid ") then
                 local fluidAmount = msg:match("^@setfluid (%d+)")
@@ -766,6 +768,25 @@ local function activationReactors()
                 chatBox.say("Активация реактора №" .. i .. " (адрес: " .. reactorsAddr[i].address:sub(1,8) .. ")")
             end
         end
+        
+        ::continue::
+    end
+end
+
+local function activationReactorsAll() 
+    local reactorsAddr = getComponentsByType("htc_reactors_nuclear_reactor")
+    
+    for i = 1, #reactorsAddr do
+        local success, r = pcall(function() return component.proxy(reactorsAddr[i].address) end)
+        if not success then
+            goto continue
+        end
+
+        local success2, activation = pcall(function() return r.activate() end)
+            if success2 then
+                shutdownReactors[reactorsAddr[i].address] = false
+                chatBox.say("Активация реактора №" .. i .. " (адрес: " .. reactorsAddr[i].address:sub(1,8) .. ")")
+            end
         
         ::continue::
     end
