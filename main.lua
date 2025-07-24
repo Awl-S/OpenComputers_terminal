@@ -440,19 +440,41 @@ local function chatMessageHandler()
                 chatBox.say("@remove <ник> - Удалить игрока")
                 chatBox.say("@greeting <ник> <текст> - Установить приветствие")
                 chatBox.say("@farewell <ник> <текст> - Установить прощание")
+                chatBox.say("@setFluid <количество> - Установить мин. кол-во жидкости")
+                chatBox.say("@getFluid - Показать текущее мин. кол-во жидкости")
             elseif "@clearR" == msg then
                 local success, errormsg = os.remove(REACTOR_FILE)
-                if success then 
-                    chatBox.say("Файл успешно удален. Перезагрузите компьютер!") 
-                else 
-                    chatBox.say("Не удалось удалить файл: " .. errormsg) 
+                if success then
+                    chatBox.say("Файл успешно удален. Перезагрузите компьютер!")
+                else
+                    chatBox.say("Не удалось удалить файл: " .. errormsg)
                 end
             elseif "@clearE" == msg then
                 local success, errormsg = os.remove("/home/data/energyInfo.txt")
-                if success then 
-                    chatBox.say("Файл успешно удален. Перезагрузите компьютер!") 
-                else 
-                    chatBox.say("Не удалось удалить файл: " .. errormsg) 
+                if success then
+                    chatBox.say("Файл успешно удален. Перезагрузите компьютер!")
+                else
+                    chatBox.say("Не удалось удалить файл: " .. errormsg)
+                end
+            elseif "@getFluid" == msg then
+                chatBox.say("Текущее минимальное количество жидкости: " .. MIN_COUNT_FLUID_DROP .. " мл")
+            elseif msg:match("^@setfluid ") then
+                local fluidAmount = msg:match("^@setfluid (%d+)")
+                if fluidAmount then
+                    local newAmount = tonumber(fluidAmount)
+                    if newAmount and newAmount > 0 then
+                        MIN_COUNT_FLUID_DROP = newAmount
+                        local success = saveFileData(FLUID_DROP_FILE, MIN_COUNT_FLUID_DROP)
+                        if success then
+                            chatBox.say("Минимальное количество жидкости установлено: " .. MIN_COUNT_FLUID_DROP .. " мл")
+                        else
+                            chatBox.say("Ошибка при сохранении в файл!")
+                        end
+                    else
+                        chatBox.say("Неверное значение! Введите положительное число.")
+                    end
+                else
+                    chatBox.say("Использование: @setfluid <количество>")
                 end
             elseif msg:match("^@add ") then
                 local playerNick = msg:match("^@add (.+)")
@@ -613,14 +635,34 @@ local lastReactorCount     = 0
 local reactorsClearedOnce  = false
 local explosionNotified    = false
 
-local MIN_COUNT_FLUID_DROP = 4000000  -- минимальное количество жидкости в каплях (мл)
 local ME_CHECK_INTERVAL    = 60       -- интервал проверки ME в секундах (1 минута)
 local FLUID_LABEL         = "Drop of fluid.low_temperature_refrigerant"
+local FLUID_DROP_FILE = "/home/data/fluidDropInfo.txt"
 
 local lastMECheck         = 0
 local currentFluidCount   = 0
 local meControllerAvailable = false
 local shutdownReactors    = {} -- Таблица для хранения адресов отключенных реакторов
+
+function saveFileData(fileName, data)
+    ensureDirectoryExists("/home/data")
+    
+    local file = io.open(fileName, "w")
+    if file then
+        file:write(tostring(data))
+        file:close()
+        return true
+    else
+        return false
+    end
+end
+
+local MIN_COUNT_FLUID_DROP = loadFileData(FLUID_DROP_FILE)
+if MIN_COUNT_FLUID_DROP == 0 then
+    MIN_COUNT_FLUID_DROP = 1000000  -- значение по умолчанию
+    saveFileData(FLUID_DROP_FILE, MIN_COUNT_FLUID_DROP)  -- сохраняем в файл
+end
+
 
 local function formatReactorEnergy(rf)
     if rf >= 1000000000000 then
