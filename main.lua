@@ -613,6 +613,15 @@ local lastReactorCount     = 0
 local reactorsClearedOnce  = false
 local explosionNotified    = false
 
+local MIN_COUNT_FLUID_DROP = 4000000  -- минимальное количество жидкости в каплях (мл)
+local ME_CHECK_INTERVAL    = 60       -- интервал проверки ME в секундах (1 минута)
+local FLUID_LABEL         = "Drop of fluid.low_temperature_refrigerant"
+
+local lastMECheck         = 0
+local currentFluidCount   = 0
+local meControllerAvailable = false
+local shutdownReactors    = {} -- Таблица для хранения адресов отключенных реакторов
+
 local function formatReactorEnergy(rf)
     if rf >= 1000000000000 then
         return string.format("%.2f TRF/t", rf / 1000000000000)
@@ -627,6 +636,99 @@ local function formatReactorEnergy(rf)
     end
 end
 
+local function checkFluidInME()
+    local currentTime = computer.uptime()
+    
+    -- Проверяем, прошла ли минута с последней проверки
+    if currentTime - lastMECheck < ME_CHECK_INTERVAL then
+        return currentFluidCount -- Возвращаем кэшированное значение
+    end
+    
+    lastMECheck = currentTime
+    
+    -- Проверяем доступность ME контроллера
+    if not component.isAvailable("me_controller") then
+        meControllerAvailable = false
+        currentFluidCount = 0
+        return 0
+    end
+    
+    meControllerAvailable = true
+    
+    local success, result = pcall(function()
+        local meController = component.me_controller
+        return meController.getItemsInNetwork({ name = 'ae2fc:fluid_drop' })
+    end)
+    
+    if not success then
+        meControllerAvailable = false
+        currentFluidCount = 0
+        return 0
+    end
+    
+    local items = result
+    if not items or type(items) ~= "table" or #items == 0 then
+        currentFluidCount = 0
+        return 0
+    end
+    
+    -- Ищем нужную жидкость по label
+    currentFluidCount = 0
+    for _, item in ipairs(items) do
+        if item and item.label and item.label == FLUID_LABEL and item.size then
+            currentFluidCount = tonumber(item.size) or 0
+            break
+        end
+    end
+    
+    return currentFluidCount
+end
+
+local function deactivationReactors()
+    local reactorsAddr = getComponentsByType("htc_reactors_nuclear_reactor")
+    
+    for i = 1, #reactorsAddr do
+        local success, r = pcall(function() return component.proxy(reactorsAddr[i].address) end)
+        if not success then
+            goto continue
+        end
+
+        local success_status, hasWork = pcall(function() return r.hasWork() end)
+        local success_type, reactorType = pcall(function() return r.isActiveCooling() end)
+        if success_type and reactorType then
+            if success_status and hasWork then
+                local success2, deactivation = pcall(function() return r.deactivate() end)
+                if success2 then
+                    shutdownReactors[reactorsAddr[i].address] = true
+                    chatBox.say("Отключение реактора №" .. i .. " (адрес: " .. reactorsAddr[i].address:sub(1,8) .. ") из-за недостатка жидкости: ")
+                end
+            end
+        end
+        ::continue::
+    end
+end
+
+local function activationReactors() 
+    local reactorsAddr = getComponentsByType("htc_reactors_nuclear_reactor")
+    
+    for i = 1, #reactorsAddr do
+        local success, r = pcall(function() return component.proxy(reactorsAddr[i].address) end)
+        if not success then
+            goto continue
+        end
+
+        if shutdownReactors[reactorsAddr[i].address] then
+            local success2, activation = pcall(function() return r.activate() end)
+            if success2 then
+                shutdownReactors[reactorsAddr[i].address] = false
+                chatBox.say("Активация реактора №" .. i .. " (адрес: " .. reactorsAddr[i].address:sub(1,8) .. ")")
+            end
+        end
+        
+        ::continue::
+    end
+end
+
 -- Глобальная переменная для отслеживания какой реактор обновлять
 local reactorUpdateIndex = 1
 local lastReactorData = {} -- Кэш предыдущих значений
@@ -634,6 +736,15 @@ local lastReactorData = {} -- Кэш предыдущих значений
 local function getNuclearReactorsStats()
     local reactorsAddr = getComponentsByType("htc_reactors_nuclear_reactor")
     local reactorsData = {}
+
+    if component.isAvailable("me_controller") then
+        local fluidCount = checkFluidInME()
+        if fluidCount <= MIN_COUNT_FLUID_DROP then
+            deactivationReactors() 
+        else
+            activationReactors()
+        end
+    end 
 
     local totalEnergy, totalCoolant, hottest = 0, 0, 0
 
