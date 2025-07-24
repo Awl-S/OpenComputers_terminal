@@ -927,7 +927,7 @@ local function renderNuclearReactors(stats)
         local summaryY = b.maxY
         local clearWidth = 70
         gui.text(b.x, summaryY, string.rep(" ", clearWidth))
-        gui.text(b.x, summaryY, string.format("&fΣ: &6%s &b%s mB/s &fРеакторов: &e%d Жидкости: %d / %d", 
+        gui.text(b.x, summaryY, string.format("&fΣ: &6%s &b%s mB/s \t\t&fРеакторов: &e%d \t\t&fЖидкости: &b%d &f/ &b%d", 
             formatReactorEnergy(stats.totalEnergy), stats.totalCoolant, stats.count, stats.fluidCount, MIN_COUNT_FLUID_DROP))
     end
 end
