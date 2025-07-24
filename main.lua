@@ -426,22 +426,41 @@ local function handleChatMessages(statusChanges)
 end
 
 local function activationReactorsAll() 
-    local reactorsAddr = getComponentsByType("htc_reactors_nuclear_reactor")
+    local success, reactorsAddr = pcall(getComponentsByType, "htc_reactors_nuclear_reactor")
+    
+    if not success then
+        chatBox.say("Ошибка при получении списка реакторов!")
+        return
+    end
+    
+    if not reactorsAddr or #reactorsAddr == 0 then
+        chatBox.say("Реакторы не найдены!")
+        return
+    end
+    
+    chatBox.say("Начинаю активацию " .. #reactorsAddr .. " реакторов...")
     
     for i = 1, #reactorsAddr do
         local success, r = pcall(function() return component.proxy(reactorsAddr[i].address) end)
         if not success then
+            chatBox.say("Ошибка подключения к реактору №" .. i)
             goto continue
         end
 
-        local success2, activation = pcall(function() return r.activate() end)
-            if success2 then
+        local success2, result = pcall(function() return r.activate() end)
+        if success2 then
+            if shutdownReactors then
                 shutdownReactors[reactorsAddr[i].address] = false
-                chatBox.say("Активация реактора №" .. i .. " (адрес: " .. reactorsAddr[i].address:sub(1,8) .. ")")
             end
+            chatBox.say("Активация реактора №" .. i .. " (адрес: " .. reactorsAddr[i].address:sub(1,8) .. ")")
+        else
+            chatBox.say("Ошибка активации реактора №" .. i .. ": " .. tostring(result))
+        end
         
         ::continue::
     end
+    
+    chatBox.say("Процесс активации завершен!")
 end
 
 local function chatMessageHandler()
@@ -461,6 +480,7 @@ local function chatMessageHandler()
                 chatBox.say("@farewell <ник> <текст> - Установить прощание")
                 chatBox.say("@setfluid <количество> - Установить мин. кол-во жидкости")
                 chatBox.say("@getfluid - Показать текущее мин. кол-во жидкости")
+                chatBox.say("@startreactor - Активировать все реакторы")
             elseif "@clearR" == msg then
                 local success, errormsg = os.remove(REACTOR_FILE)
                 if success then
@@ -475,9 +495,9 @@ local function chatMessageHandler()
                 else
                     chatBox.say("Не удалось удалить файл: " .. errormsg)
                 end
-            elseif msg:match("^@startreactor ") then
+            elseif "@startreactor" == msg then  -- Исправлено: убрано лишнее match
                 activationReactorsAll()
-            elseif msg:match("^@getfluid ") then
+            elseif "@getfluid" == msg then  -- Исправлено: убрано лишнее match
                 chatBox.say("Текущее минимальное количество жидкости: " .. MIN_COUNT_FLUID_DROP .. " мл")
             elseif msg:match("^@setfluid ") then
                 local fluidAmount = msg:match("^@setfluid (%d+)")
