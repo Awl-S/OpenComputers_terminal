@@ -425,6 +425,25 @@ local function handleChatMessages(statusChanges)
     end
 end
 
+local function activationReactorsAll() 
+    local reactorsAddr = getComponentsByType("htc_reactors_nuclear_reactor")
+    
+    for i = 1, #reactorsAddr do
+        local success, r = pcall(function() return component.proxy(reactorsAddr[i].address) end)
+        if not success then
+            goto continue
+        end
+
+        local success2, activation = pcall(function() return r.activate() end)
+            if success2 then
+                shutdownReactors[reactorsAddr[i].address] = false
+                chatBox.say("Активация реактора №" .. i .. " (адрес: " .. reactorsAddr[i].address:sub(1,8) .. ")")
+            end
+        
+        ::continue::
+    end
+end
+
 local function chatMessageHandler()
     while true do
         local _, address, nick, msg = event.pull(1, "chat_message")
@@ -768,25 +787,6 @@ local function activationReactors()
                 chatBox.say("Активация реактора №" .. i .. " (адрес: " .. reactorsAddr[i].address:sub(1,8) .. ")")
             end
         end
-        
-        ::continue::
-    end
-end
-
-local function activationReactorsAll() 
-    local reactorsAddr = getComponentsByType("htc_reactors_nuclear_reactor")
-    
-    for i = 1, #reactorsAddr do
-        local success, r = pcall(function() return component.proxy(reactorsAddr[i].address) end)
-        if not success then
-            goto continue
-        end
-
-        local success2, activation = pcall(function() return r.activate() end)
-            if success2 then
-                shutdownReactors[reactorsAddr[i].address] = false
-                chatBox.say("Активация реактора №" .. i .. " (адрес: " .. reactorsAddr[i].address:sub(1,8) .. ")")
-            end
         
         ::continue::
     end
