@@ -495,30 +495,6 @@ local function chatMessageHandler()
                 else
                     chatBox.say("Не удалось удалить файл: " .. errormsg)
                 end
-            elseif "@startreactor" == msg then  -- Исправлено: убрано лишнее match
-                activationReactorsAll()
-            elseif "@getfluid" == msg then
-                if MIN_COUNT_FLUID_DROP >= 0 then
-                    chatBox.say("Текущее минимальное количество жидкости: " .. MIN_COUNT_FLUID_DROP .. " мл")
-                end
-            elseif msg:match("^@setfluid ") then
-                local fluidAmount = msg:match("^@setfluid (%d+)")
-                if fluidAmount then
-                    local newAmount = tonumber(fluidAmount)
-                    if newAmount and newAmount > 0 then
-                        MIN_COUNT_FLUID_DROP = newAmount
-                        local success = saveFileData(FLUID_DROP_FILE, MIN_COUNT_FLUID_DROP)
-                        if success then
-                            chatBox.say("Минимальное количество жидкости установлено: " .. MIN_COUNT_FLUID_DROP .. " мл")
-                        else
-                            chatBox.say("Ошибка при сохранении в файл!")
-                        end
-                    else
-                        chatBox.say("Неверное значение! Введите положительное число.")
-                    end
-                else
-                    chatBox.say("Использование: @setfluid <количество>")
-                end
             elseif msg:match("^@add ") then
                 local playerNick = msg:match("^@add (.+)")
                 if playerNick then
