@@ -478,9 +478,9 @@ local function chatMessageHandler()
                 chatBox.say("@remove <ник> - Удалить игрока")
                 chatBox.say("@greeting <ник> <текст> - Установить приветствие")
                 chatBox.say("@farewell <ник> <текст> - Установить прощание")
-                chatBox.say("@setfluid <количество> - Установить мин. кол-во жидкости")
-                chatBox.say("@getfluid - Показать текущее мин. кол-во жидкости")
-                chatBox.say("@startreactor - Активировать все реакторы")
+                -- chatBox.say("@setfluid <количество> - Установить мин. кол-во жидкости")
+                -- chatBox.say("@getfluid - Показать текущее мин. кол-во жидкости")
+                -- chatBox.say("@startreactor - Активировать все реакторы")
             elseif "@clearR" == msg then
                 local success, errormsg = os.remove(REACTOR_FILE)
                 if success then
