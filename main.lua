@@ -753,7 +753,7 @@ local function deactivationReactors()
         if not success then
             goto continue
         end
-
+        local stop_reactor = false
         local success_status, hasWork = pcall(function() return r.hasWork() end)
         local success_type, reactorType = pcall(function() return r.isActiveCooling() end)
         if success_type and reactorType then
@@ -761,11 +761,14 @@ local function deactivationReactors()
                 local success2, deactivation = pcall(function() return r.deactivate() end)
                 if success2 then
                     shutdownReactors[reactorsAddr[i].address] = true
-                    chatBox.say("Отключение реактора №" .. i .. " (адрес: " .. reactorsAddr[i].address:sub(1,8) .. ") из-за недостатка жидкости: ")
+                    stop_reactor = true
                 end
             end
         end
         ::continue::
+    end
+    if stop_reactor then
+        chatBox.say("Отключение реакторов из-за недостатка жидкости!")
     end
 end
 
