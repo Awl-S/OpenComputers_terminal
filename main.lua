@@ -498,8 +498,9 @@ local function chatMessageHandler()
             elseif "@startreactor" == msg then  -- Исправлено: убрано лишнее match
                 activationReactorsAll()
             elseif "@getfluid" == msg then
-                chatBox.say("Меню:")
-                chatBox.say("Текущее минимальное количество жидкости: " .. MIN_COUNT_FLUID_DROP .. " мл")
+                if MIN_COUNT_FLUID_DROP >= 0 then
+                    chatBox.say("Текущее минимальное количество жидкости: " .. MIN_COUNT_FLUID_DROP .. " мл")
+                end
             elseif msg:match("^@setfluid ") then
                 local fluidAmount = msg:match("^@setfluid (%d+)")
                 if fluidAmount then
