@@ -1,4 +1,4 @@
-# OpenComputers Terminal
+# OpenComputers Terminal-dev
 
 Комплексная система мониторинга для сервера Minecraft HiTech 1.12.2, обеспечивающая отслеживание критически важных систем через интерфейс OpenComputers.
 
