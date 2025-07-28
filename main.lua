@@ -359,7 +359,6 @@ local function processPlayersStatus()
     }
 end
 
--- Исправленная функция рендера (убрано условие hasChanges)
 local function renderPlayersDisplay(processedData)
     local innerBounds = getFrameInnerBounds("players")
     
