@@ -9,12 +9,20 @@ local filesystem = require("filesystem")
 -- Список файлов для скачивания
 local files = {
     {
-        url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/main.lua",
+        url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/dev/main.lua",
         path = "/home/main.lua"
     },
     {
-        url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/lib/sgui.lua",
+        url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/dev/models/applied_energistics.lua",
+        path = "/home/models/applied_energistics.lua"
+    },
+    {
+        url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/dev/lib/sgui.lua",
         path = "/lib/sgui.lua"
+    },
+    {
+        url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/dev/lib/applied_energistics.lua",
+        path = "/lib/applied_energistics.lua"
     }
 }
 
