@@ -15,6 +15,10 @@ local files = {
     {
         url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/lib/sgui.lua",
         path = "/lib/sgui.lua"
+    },
+    {
+        url = "https://raw.githubusercontent.com/Awl-S/Monitoring-Ala/refs/heads/main/tools/admin.lua",
+        path = "/home/admin.lua"
     }
 }
 
