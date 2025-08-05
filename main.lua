@@ -580,6 +580,20 @@ function energy(eu)
     end
 end
 
+local function rf_energy(rf)
+    if rf >= 1000000000000 then
+        return string.format("%.2f TRF/t", rf / 1000000000000)
+    elseif rf >= 1000000000 then
+        return string.format("%.2f GRF/t", rf / 1000000000)
+    elseif rf >= 1000000 then
+        return string.format("%.2f MRF/t", rf / 1000000)
+    elseif rf >= 1000 then
+        return string.format("%.2f kRF/t", rf / 1000)
+    else
+        return string.format("%.0f RF/t", rf)
+    end
+end
+
 maxEnergyFile = "/home/data/energyInfo.txt"
 maxEnergyFluxNetwork = loadFileData(maxEnergyFile)
 
@@ -635,12 +649,12 @@ local function renderFluxNetwork(stats)
     gui.text(3, 4, "&aСеть:&e " .. tostring(stats.name))
 
     gui.text(3, 5, string.rep(" ", 20))
-    gui.text(3, 5, "&aВход: &2" .. energy(stats.input / 4))
+    gui.text(3, 5, "&aВход: &2" .. rf_energy(stats.input / 4))
 
     gui.text(3, 6, string.rep(" ", 20))
-    gui.text(3, 6, "&aБуфер:&2 " .. string.sub(energy(stats.buffer), 1, -3))
+    gui.text(3, 6, "&aБуфер:&2 " .. string.sub(rf_energy(stats.buffer), 1, -3))
 
-    gui.text(3, 7, "&aМаксимальный вход:&2 " .. energy(stats.maxInput / 4))
+    gui.text(3, 7, "&aМаксимальный вход:&2 " .. rf_energy(stats.maxInput / 4))
 end
 
 local REACTOR_FILE         = "/home/data/reactorInfo.txt"
@@ -679,21 +693,6 @@ local MIN_COUNT_FLUID_DROP = loadFileData(FLUID_DROP_FILE)
 if MIN_COUNT_FLUID_DROP == 0 then
     MIN_COUNT_FLUID_DROP = 1000000  -- значение по умолчанию
     saveFileData(FLUID_DROP_FILE, MIN_COUNT_FLUID_DROP)  -- сохраняем в файл
-end
-
-
-local function formatReactorEnergy(rf)
-    if rf >= 1000000000000 then
-        return string.format("%.2f TRF/t", rf / 1000000000000)
-    elseif rf >= 1000000000 then
-        return string.format("%.2f GRF/t", rf / 1000000000)
-    elseif rf >= 1000000 then
-        return string.format("%.2f MRF/t", rf / 1000000)
-    elseif rf >= 1000 then
-        return string.format("%.2f kRF/t", rf / 1000)
-    else
-        return string.format("%.0f RF/t", rf)
-    end
 end
 
 local function checkFluidInME()
@@ -890,7 +889,7 @@ local function renderSingleReactor(reactor, x, y, reactorWidth, reactorHeight)
     gui.text(x, y, reactorColor .. "Реактор №" .. reactor.id .. " (" .. reactor.type .. reactorColor .. ")")
     gui.text(x, y + 1, "&fВключен: " .. statusColor .. statusText)
     gui.text(x, y + 2, "&fУровень: &e" .. string.format("%d", reactor.level))
-    gui.text(x, y + 3, "&fЭнергия: &6" .. formatReactorEnergy(reactor.energyGen))
+    gui.text(x, y + 3, "&fЭнергия: &6" .. rf_energy(reactor.energyGen))
     gui.text(x, y + 4, "&fТемп:    " .. tempColor .. reactor.temp .. "°C")
     if reactor.type == "&bЖидкостный" then
         gui.text(x, y + 5, "&fРасход:  &b" .. reactor.coolant .. " mB/s")
@@ -949,7 +948,7 @@ local function renderNuclearReactors(stats)
         local clearWidth = 70
         gui.text(b.x, summaryY, string.rep(" ", clearWidth))
         gui.text(b.x, summaryY, string.format("&fΣ: &6%s &b%s mB/s \t\t&fРеакторов: &e%d \t\t&fЖидкости: &b%d &f/ &b%d", 
-            formatReactorEnergy(stats.totalEnergy), stats.totalCoolant, stats.count, stats.fluidCount, MIN_COUNT_FLUID_DROP))
+            rf_energy(stats.totalEnergy), stats.totalCoolant, stats.count, stats.fluidCount, MIN_COUNT_FLUID_DROP))
     end
 end
 
