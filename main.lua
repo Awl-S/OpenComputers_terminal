@@ -566,17 +566,17 @@ function saveMaxEnergy(maxEnergy, fileName)
     end
 end
 
-function energy(eu)
-    if eu >= 1000000000000 then
-        return string.format("%.3f TEU/t", eu / 1000000000000)
-    elseif eu >= 1000000000 then
-        return string.format("%.3f GEU/t", eu / 1000000000)
-    elseif eu >= 1000000 then
-        return string.format("%.3f MEU/t", eu / 1000000)
-    elseif eu >= 1000 then
-        return string.format("%.3f kEU/t", eu / 1000)
+function energy(rf)
+    if rf >= 1000000000000 then
+        return string.format("%.3f TRF/t", rf / 1000000000000)
+    elseif rf >= 1000000000 then
+        return string.format("%.3f GRF/t", rf / 1000000000)
+    elseif rf >= 1000000 then
+        return string.format("%.3f MRF/t", rf / 1000000)
+    elseif rf >= 1000 then
+        return string.format("%.3f kRF/t", rf / 1000)
     else
-        return string.format("%.3f EU/t", eu)
+        return string.format("%.3f RF/t", rf)
     end
 end
 
@@ -635,12 +635,12 @@ local function renderFluxNetwork(stats)
     gui.text(3, 4, "&aСеть:&e " .. tostring(stats.name))
 
     gui.text(3, 5, string.rep(" ", 20))
-    gui.text(3, 5, "&aВход: &2" .. energy(stats.input / 4))
+    gui.text(3, 5, "&aВход: &2" .. energy(stats.input)) -- убрал деление на 4
 
     gui.text(3, 6, string.rep(" ", 20))
     gui.text(3, 6, "&aБуфер:&2 " .. string.sub(energy(stats.buffer), 1, -3))
 
-    gui.text(3, 7, "&aМаксимальный вход:&2 " .. energy(stats.maxInput / 4))
+    gui.text(3, 7, "&aМаксимальный вход:&2 " .. energy(stats.maxInput)) -- убрал деление на 4
 end
 
 local REACTOR_FILE         = "/home/data/reactorInfo.txt"
